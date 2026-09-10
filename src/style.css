@@ -255,7 +255,7 @@ button.tool.on {
   inset: 0;
   display: grid;
   place-items: stretch;
-  padding: 8px;
+  padding: 0;
   overflow: hidden;
 }
 
@@ -328,11 +328,14 @@ button.tool.on {
   text-overflow: ellipsis;
 }
 
+.demo-overlay .station {
+  pointer-events: none;
+}
+
 .flow-open,
 .flow-dispatch,
-.flow-finish,
 .flow-writeback {
-  animation: dash-move 1s linear infinite;
+  animation: dash-move 0.9s linear infinite;
 }
 
 @keyframes dash-move {

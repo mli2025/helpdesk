@@ -5,7 +5,7 @@ import { mountEfpDemoPreview } from './efpDemoPreview'
 type Mode = 'design' | 'preview'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
-let mode: Mode = 'design'
+let mode: Mode = 'preview'
 let destroyDesign: (() => void) | null = null
 let destroyPreview: (() => void) | null = null
 
@@ -28,7 +28,7 @@ function render(): void {
           </div>
           <div class="bar-actions">
             <button type="button" data-act="reset">重置精致办公示例</button>
-            <button type="button" class="accent" data-act="preview">显示看板演示</button>
+            <button type="button" class="accent" data-act="preview">打开看板演示（人/文件/动画）</button>
           </div>
         </header>
         <div class="efp-wrap" id="efp-wrap"></div>
@@ -58,11 +58,11 @@ function render(): void {
           <div class="logo">一</div>
           <div>
             <div class="title">星期一 · 看板演示</div>
-            <div class="sub">easy-floorplan 户型 + 定时往复连线</div>
+            <div class="sub">工位上的人 / 文件堆 / 智能体 · 单据沿门洞往复动画</div>
           </div>
         </div>
         <div class="bar-actions">
-          <button type="button" class="primary" data-act="design">返回户型设计</button>
+          <button type="button" class="primary" data-act="design">编辑户型</button>
         </div>
       </header>
       <div class="view-canvas plain" id="view-canvas"></div>

@@ -1,5 +1,6 @@
 import type { FloorplanCardConfig } from 'easy-floorplan/types'
 import { emptyConfig, newPlanConfig } from 'easy-floorplan/types'
+import { AGENTS, DEPTS, OFFICE, deptWidth } from './mondayScene'
 
 type Furn = {
   id: string
@@ -45,21 +46,8 @@ function workstation(
  * 下：AI 办公室（最左接单台 + 3 个智能体工位）
  */
 export function mondayOfficePlan(): FloorplanCardConfig {
-  const W = 1200
-  const H = 720
-  const ox = 40
-  const oy = 36
-  const deptBottom = 340
-  const aiTop = 400
-  const aiBottom = 680
-  const right = 1160
-  const deptW = (right - ox) / 4
-  const depts = [
-    { id: 'finance', name: '财务部', color: '#dbeafe', ink: '#1e3a8a' },
-    { id: 'purchase', name: '采购部', color: '#dcfce7', ink: '#14532d' },
-    { id: 'sales', name: '销售部', color: '#ffedd5', ink: '#9a3412' },
-    { id: 'prod', name: '生产部', color: '#f3e8ff', ink: '#6b21a8' },
-  ] as const
+  const { W, H, ox, oy, deptBottom, aiTop, aiBottom, right } = OFFICE
+  const deptW = deptWidth()
 
   const walls: Array<{ id: string; x1: number; y1: number; x2: number; y2: number; thickness: number }> = []
   const openings: Array<Record<string, unknown>> = []
@@ -76,7 +64,7 @@ export function mondayOfficePlan(): FloorplanCardConfig {
     { id: 'sep_ai', x1: ox, y1: aiTop, x2: right, y2: aiTop, thickness: 8 },
   )
 
-  depts.forEach((d, i) => {
+  DEPTS.forEach((d, i) => {
     const x0 = ox + i * deptW
     const x1 = x0 + deptW
     if (i > 0) {
@@ -273,17 +261,11 @@ export function mondayOfficePlan(): FloorplanCardConfig {
     },
   )
 
-  const agents = [
-    { id: 'agent_mail', name: '邮件助手', color: '#4f46e5' },
-    { id: 'agent_support', name: '客服助手', color: '#0d9488' },
-    { id: 'agent_dev', name: '研发助手', color: '#db2777' },
-  ] as const
-
   const agentZoneLeft = recvRight + 30
   const agentZoneW = right - agentZoneLeft - 20
   const slotW = agentZoneW / 3
 
-  agents.forEach((a, i) => {
+  AGENTS.forEach((a, i) => {
     const zx = agentZoneLeft + i * slotW
     if (i > 0) {
       walls.push({
@@ -329,7 +311,6 @@ export function mondayOfficePlan(): FloorplanCardConfig {
     width: W,
     height: H,
     grid: 20,
-    // 绝对吸附步长 5（网格 20 的 25%）— 鼠标拖动不再一格跳 20
     snap: 5,
     skin: 'odnetnin',
     background: '#faf8f4',

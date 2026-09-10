@@ -20,6 +20,7 @@ body,
 #app {
   margin: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 button,
@@ -71,11 +72,14 @@ button.tool.on {
 
 .app-shell {
   height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .bar {
+  flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -133,6 +137,7 @@ button.tool.on {
   min-height: 0;
   display: grid;
   grid-template-columns: 220px 1fr 280px;
+  overflow: hidden;
 }
 
 .palette,
@@ -163,12 +168,14 @@ button.tool.on {
 .canvas-wrap {
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
   background: #141416;
 }
 
 #board-canvas {
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 .inspector label,
@@ -200,23 +207,35 @@ button.tool.on {
 
 .view-canvas.plain {
   flex: 1;
+  min-height: 0;
   margin: 0;
   background: #141416;
-  overflow: auto;
-  min-height: 0;
+  overflow: hidden;
+  position: relative;
 }
 
 .plain-stage {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 680px;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
 }
 
 .plain-svg {
   display: block;
   width: 100%;
-  min-height: 680px;
+  height: 100%;
+}
+
+.plain-hint {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  font-size: 12px;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.65);
+  padding: 6px 10px;
+  border-radius: 999px;
+  pointer-events: none;
 }
 
 .demo-bar {

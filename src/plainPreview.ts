@@ -137,6 +137,45 @@ function moodOf(files: number): string {
   return '忙碌'
 }
 
+function contentViewBox(
+  regions: RegionNode[],
+  desks: DeskNode[],
+  actors: { x: number; y: number }[],
+): { x: number; y: number; w: number; h: number } {
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  const add = (x: number, y: number) => {
+    minX = Math.min(minX, x)
+    minY = Math.min(minY, y)
+    maxX = Math.max(maxX, x)
+    maxY = Math.max(maxY, y)
+  }
+  for (const r of regions) {
+    add(r.rect.x, r.rect.y)
+    add(r.rect.x + r.rect.w, r.rect.y + r.rect.h)
+  }
+  for (const d of desks) {
+    add(d.x, d.y)
+    add(d.x + 140, d.y + 128)
+  }
+  for (const a of actors) {
+    add(a.x, a.y)
+    add(a.x + 48, a.y + 72)
+  }
+  if (!Number.isFinite(minX)) {
+    return { x: 0, y: 0, w: 1200, h: 700 }
+  }
+  const pad = 28
+  return {
+    x: minX - pad,
+    y: minY - pad,
+    w: Math.max(400, maxX - minX + pad * 2),
+    h: Math.max(300, maxY - minY + pad * 2),
+  }
+}
+
 export function mountPlainPreview(scheme: BoardScheme, host: HTMLElement): () => void {
   const regions = scheme.nodes.filter((n): n is RegionNode => n.type === 'region')
   const desks = scheme.nodes.filter((n): n is DeskNode => n.type === 'desk')
@@ -172,8 +211,7 @@ export function mountPlainPreview(scheme: BoardScheme, host: HTMLElement): () =>
   let tickTimer = 0
   let spawnTimer = 0
 
-  const w = Math.max(scheme.canvas.width, 1200)
-  const h = Math.max(scheme.canvas.height, 760)
+  const vb = contentViewBox(regions, desks, actors)
 
   host.innerHTML = `
     <div class="plain-stage">
@@ -182,14 +220,14 @@ export function mountPlainPreview(scheme: BoardScheme, host: HTMLElement): () =>
         <button type="button" data-once>再来一单</button>
         <span class="demo-speech" data-speech>${demo.speech}</span>
       </div>
-      <svg class="plain-svg" viewBox="0 0 ${w} ${h}" width="100%" preserveAspectRatio="xMidYMid meet">
-        <rect width="100%" height="100%" fill="#141416"/>
+      <svg class="plain-svg" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}" preserveAspectRatio="xMidYMid meet">
+        <rect x="${vb.x}" y="${vb.y}" width="${vb.w}" height="${vb.h}" fill="#141416"/>
         <g data-walls></g>
         <g data-links></g>
         <g data-actors></g>
         <g data-desks></g>
       </svg>
-      <div class="iso-hint">平民 2D 预览 · 连线走门洞折线 · 文件堆=负载</div>
+      <div class="plain-hint">一屏铺满 · 无滚动 · 连线走门洞</div>
     </div>
   `
 

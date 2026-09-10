@@ -115,6 +115,30 @@ export function sampleScheme(): BoardScheme {
     y: 320,
     status: 'idle',
   }
+  const h1: DeskNode = {
+    id: uid('d'),
+    type: 'desk',
+    kind: 'human',
+    style: 'desk-pc',
+    name: '张三',
+    x: 120,
+    y: 180,
+    personId: 'p_zhang',
+    gender: 'male',
+    status: 'idle',
+  }
+  const h2: DeskNode = {
+    id: uid('d'),
+    type: 'desk',
+    kind: 'human',
+    style: 'desk-pc',
+    name: '李四',
+    x: 220,
+    y: 360,
+    personId: 'p_li',
+    gender: 'female',
+    status: 'idle',
+  }
   const a1: DeskNode = {
     id: uid('d'),
     type: 'desk',
@@ -143,7 +167,7 @@ export function sampleScheme(): BoardScheme {
     version: 1,
     updatedAt: new Date().toISOString(),
     canvas: { width: 1400, height: 800 },
-    nodes: [finance, office, front, a1, a2],
+    nodes: [finance, office, h1, h2, front, a1, a2],
     links: [],
   }
 }

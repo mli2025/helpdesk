@@ -13,7 +13,7 @@ import {
   setActiveSchemeId,
 } from './storage'
 import type { BoardScheme, DeskNode, LinkEdge, RegionNode } from './types'
-import { renderIsoPreview } from './isoPreview'
+import { mountPlainPreview } from './plainPreview'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 
@@ -368,20 +368,21 @@ function renderViewer(): void {
           <div class="logo">一</div>
           <div>
             <div class="title">${escapeAttr(scheme.name)}</div>
-            <div class="sub">预览看板 · 图2 等距立体墙体</div>
+            <div class="sub">平民 2D 预览 · 定时演示数据往复</div>
           </div>
         </div>
         <div class="bar-actions">
-          <button type="button" class="primary" data-act="edit">返回绘图（图1线框）</button>
+          <button type="button" class="primary" data-act="edit">返回绘图</button>
         </div>
       </header>
-      <div class="view-canvas iso" id="view-canvas"></div>
+      <div class="view-canvas plain" id="view-canvas"></div>
     </div>
   `
 
-  renderIsoPreview(scheme, app.querySelector('#view-canvas')!)
+  const stop = mountPlainPreview(scheme, app.querySelector('#view-canvas')!)
 
   app.querySelector('[data-act="edit"]')?.addEventListener('click', () => {
+    stop()
     mode = 'edit'
     render()
   })

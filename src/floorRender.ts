@@ -27,7 +27,7 @@ export function ensureDoors(region: RegionNode): DoorSpec[] {
   return region.doors?.length ? region.doors : defaultDoors()
 }
 
-/** Split rectangle outline into wall segments with door gaps (图1 线框墙) */
+/** Split rectangle outline into wall segments with door gaps */
 export function wallSegments(rect: Rect, doors: DoorSpec[]): WallSeg[] {
   const { x, y, w, h } = rect
   const segs: WallSeg[] = []
@@ -48,7 +48,6 @@ export function wallSegments(rect: Rect, doors: DoorSpec[]): WallSeg[] {
     }
     const half = door.width / 2
     const center = door.t * line.len
-    const a0 = 0
     const a1 = Math.max(0, center - half)
     const b0 = Math.min(line.len, center + half)
     const b1 = line.len
@@ -61,8 +60,8 @@ export function wallSegments(rect: Rect, doors: DoorSpec[]): WallSeg[] {
       }
     }
 
-    if (a1 - a0 > 2) {
-      const p0 = pointAt(a0)
+    if (a1 > 2) {
+      const p0 = pointAt(0)
       const p1 = pointAt(a1)
       segs.push({ x1: p0.x, y1: p0.y, x2: p1.x, y2: p1.y, edge })
     }
@@ -73,75 +72,4 @@ export function wallSegments(rect: Rect, doors: DoorSpec[]): WallSeg[] {
     }
   }
   return segs
-}
-
-/** Isometric projection (图2) */
-export function toIso(x: number, y: number, z = 0, ox = 520, oy = 80): { x: number; y: number } {
-  return {
-    x: ox + (x - y) * 0.72,
-    y: oy + (x + y) * 0.36 - z,
-  }
-}
-
-export function isoQuad(
-  points: { x: number; y: number; z?: number }[],
-  ox?: number,
-  oy?: number,
-): string {
-  return points
-    .map((p, i) => {
-      const q = toIso(p.x, p.y, p.z ?? 0, ox, oy)
-      return `${i === 0 ? 'M' : 'L'} ${q.x.toFixed(1)} ${q.y.toFixed(1)}`
-    })
-    .join(' ') + ' Z'
-}
-
-/** Extruded wall face for one segment */
-export function isoWallFaces(
-  seg: WallSeg,
-  wallH = 28,
-  ox?: number,
-  oy?: number,
-): { side: string; top: string } {
-  const a = { x: seg.x1, y: seg.y1 }
-  const b = { x: seg.x2, y: seg.y2 }
-  const side = isoQuad(
-    [
-      { ...a, z: 0 },
-      { ...b, z: 0 },
-      { ...b, z: wallH },
-      { ...a, z: wallH },
-    ],
-    ox,
-    oy,
-  )
-  // thin top cap
-  const thick = 4
-  const nx = seg.y1 === seg.y2 ? 0 : thick
-  const ny = seg.x1 === seg.x2 ? 0 : thick
-  const top = isoQuad(
-    [
-      { x: a.x, y: a.y, z: wallH },
-      { x: b.x, y: b.y, z: wallH },
-      { x: b.x + nx, y: b.y + ny, z: wallH },
-      { x: a.x + nx, y: a.y + ny, z: wallH },
-    ],
-    ox,
-    oy,
-  )
-  return { side, top }
-}
-
-export function isoFloorPath(rect: Rect, ox?: number, oy?: number): string {
-  const { x, y, w, h } = rect
-  return isoQuad(
-    [
-      { x, y, z: 0 },
-      { x: x + w, y, z: 0 },
-      { x: x + w, y: y + h, z: 0 },
-      { x, y: y + h, z: 0 },
-    ],
-    ox,
-    oy,
-  )
 }

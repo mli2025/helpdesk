@@ -13,13 +13,19 @@ npx vite --host 127.0.0.1 --port 5173
 
 打开 http://127.0.0.1:5173
 
-### 墙体与预览
+## 门洞
 
-- **设计态**：深色底 + 白线框墙体，门洞是墙线缺口  
-- **预览态**：同一套 **平民 2D**（不要 3D），可开 **定时演示往复**  
-  - 开单：用户 → 门洞折线 → 前台（数秒消失）  
-  - 派单：前台 → 智能体（桌上堆文件）  
-  - 结束/回写：智能体 → 用户  
+选中区域后：
+- 右侧 **旋转门口 90°**（或画布上 **双击蓝点**）
+- 拖蓝点沿墙移动缺口
+- 可再加门洞
+
+Git 上可参考的现成户型/门洞交互（未整仓迁入，避免绑死 React/HA）：
+
+- [BipulRaman/Khaaka](https://github.com/BipulRaman/Khaaka) — 门/窗可旋转，单页户型编辑
+- [nicosandller/easy-floorplan](https://github.com/nicosandller/easy-floorplan) — 门吸附墙体、可翻面
+- [cvdlab/react-planner](https://github.com/cvdlab/react-planner) — 成熟 2D/3D 平面图（体量大，React）
+- [@opengeometry/openplans](https://www.npmjs.com/package/@opengeometry/openplans) — BIM 向门窗 API
 
 skill-admin 地址可在左侧填写；留空则用内置模拟数据。接口约定：
 

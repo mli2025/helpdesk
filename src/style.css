@@ -198,11 +198,18 @@ button.tool.on {
   background: #1c1f26;
 }
 
-.empty-insp,
-.hint {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.5;
+.door-box {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #1c1f26;
+}
+
+.door-box .primary {
+  width: 100%;
 }
 
 .view-canvas.plain {

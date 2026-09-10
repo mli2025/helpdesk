@@ -14,6 +14,7 @@ import {
 } from './storage'
 import type { BoardScheme, DeskNode, LinkEdge, RegionNode } from './types'
 import { mountPlainPreview } from './plainPreview'
+import { edgeLabel, ensureDoors } from './floorRender'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 
@@ -37,20 +38,19 @@ function renderInspector(): string {
 
   if (item.type === 'region') {
     const n = item as RegionNode
-    const door = n.doors?.[0] ?? { edge: 's', t: 0.5, width: 56 }
+    const doors = ensureDoors(n)
+    const door = doors[0]
     return `
-      <h3>区域（图1 线框墙）</h3>
+      <h3>区域 · 门洞</h3>
       <label>名称<input data-f="name" value="${escapeAttr(n.name)}" /></label>
-      <label>门洞方向
-        <select data-door-edge>
-          <option value="n" ${door.edge === 'n' ? 'selected' : ''}>北墙</option>
-          <option value="s" ${door.edge === 's' ? 'selected' : ''}>南墙</option>
-          <option value="e" ${door.edge === 'e' ? 'selected' : ''}>东墙</option>
-          <option value="w" ${door.edge === 'w' ? 'selected' : ''}>西墙</option>
-        </select>
-      </label>
-      <label>门洞宽度<input data-door-w type="range" min="36" max="120" value="${door.width}" /></label>
-      <p class="hint">设计态白线墙体+缺口；预览态渲染为图2立体墙。</p>
+      <div class="door-box">
+        <div class="hint">门口在<strong>${edgeLabel(door.edge)}</strong> · 可拖蓝点沿墙移动</div>
+        <button type="button" class="primary" data-door-rotate>旋转门口 90°</button>
+        <label>沿墙位置<input data-door-t type="range" min="0" max="100" value="${Math.round(door.t * 100)}" /></label>
+        <label>门洞宽度<input data-door-w type="range" min="36" max="120" value="${door.width}" /></label>
+        <button type="button" data-door-add>再加一个门洞</button>
+        <p class="hint">画布上<strong>双击蓝点</strong>也可转 90°。参考：Khaaka / easy-floorplan</p>
+      </div>
       <button type="button" class="danger" data-del>删除区域</button>`
   }
 
@@ -261,14 +261,24 @@ function refreshInspector(): void {
 
   const applyDoor = () => {
     if (!editor || !selectedId) return
-    const edge = (el.querySelector('[data-door-edge]') as HTMLSelectElement | null)?.value ?? 's'
+    const node = editor.findNode(selectedId) as RegionNode | null
+    if (!node || node.type !== 'region') return
+    const doors = ensureDoors(node)
+    const t = Number((el.querySelector('[data-door-t]') as HTMLInputElement | null)?.value ?? 50) / 100
     const width = Number((el.querySelector('[data-door-w]') as HTMLInputElement | null)?.value ?? 56)
-    editor.updateSelected({
-      doors: [{ edge, t: 0.5, width }],
-    })
+    doors[0] = { ...doors[0], t, width }
+    editor.updateSelected({ doors })
   }
-  el.querySelector('[data-door-edge]')?.addEventListener('change', applyDoor)
+  el.querySelector('[data-door-t]')?.addEventListener('input', applyDoor)
   el.querySelector('[data-door-w]')?.addEventListener('input', applyDoor)
+  el.querySelector('[data-door-rotate]')?.addEventListener('click', () => {
+    editor?.rotateSelectedDoor()
+    refreshInspector()
+  })
+  el.querySelector('[data-door-add]')?.addEventListener('click', () => {
+    editor?.addDoorToSelected()
+    refreshInspector()
+  })
 
   el.querySelector('[data-del]')?.addEventListener('click', () => {
     editor?.deleteSelected()

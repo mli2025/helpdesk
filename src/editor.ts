@@ -3,7 +3,7 @@ import type { BoardScheme, BoardNode, DeskNode, LinkEdge, RegionNode, DeskKind }
 import { uid } from './types'
 import { deskPcSvg, personSvg, robotSvg, frontBadgeSvg, svgToDataUrl } from './icons'
 import type { CatalogAgent, CatalogPerson } from './catalog'
-import { ensureDoors, wallSegments } from './floorRender'
+import { ensureDoors, wallSegments, doorCenter, doorSwingPoints, projectToEdge, rotateDoorEdge } from './floorRender'
 
 export type EditorTool = 'select' | 'region' | 'desk-human' | 'desk-front' | 'desk-agent' | 'link'
 
@@ -300,7 +300,9 @@ export class BoardEditor {
     })
     g.add(hit)
 
-    // 图1：白线墙体 + 门洞缺口
+    if (!n.doors?.length) n.doors = ensureDoors(n)
+
+    // 白线墙体 + 门洞缺口
     const doors = ensureDoors(n)
     const segs = wallSegments(n.rect, doors)
     for (const s of segs) {
@@ -315,11 +317,70 @@ export class BoardEditor {
       )
     }
 
-    // door tick marks (optional visual)
-    for (const d of doors) {
-      // small gap indicator already by missing segment
-      void d
-    }
+    // 门口可视件：摆动弧 + 可拖把手（参考 Khaaka / easy-floorplan）
+    doors.forEach((door, doorIdx) => {
+      const c = doorCenter(n.rect, door)
+      const swing = doorSwingPoints(n.rect, door)
+      const flat = swing.flatMap((p) => [p.x, p.y])
+      g.add(
+        new Konva.Line({
+          points: flat,
+          stroke: '#60a5fa',
+          strokeWidth: 1.5,
+          dash: [4, 3],
+          listening: false,
+        }),
+      )
+      const knob = new Konva.Circle({
+        x: c.x,
+        y: c.y,
+        radius: 9,
+        fill: '#3b82f6',
+        stroke: '#93c5fd',
+        strokeWidth: 2,
+        name: 'door-knob',
+        draggable: true,
+        dragBoundFunc: (pos) => {
+          // keep on current wall while dragging
+          const t = projectToEdge(n.rect, door.edge, pos)
+          const p = doorCenter(n.rect, { ...door, t })
+          return p
+        },
+      })
+      const tag = new Konva.Text({
+        x: c.x + 10,
+        y: c.y - 8,
+        text: '门',
+        fontSize: 11,
+        fill: '#93c5fd',
+        listening: false,
+      })
+      knob.on('dragmove', () => {
+        const t = projectToEdge(n.rect, door.edge, { x: knob.x(), y: knob.y() })
+        door.t = t
+        n.doors = doors.map((d, i) => (i === doorIdx ? { ...d, t } : d))
+        tag.position({ x: knob.x() + 10, y: knob.y() - 8 })
+      })
+      knob.on('dragend', () => {
+        this.rebuild()
+        this.emit()
+        this.select(n.id)
+      })
+      knob.on('dblclick dbltap', (e) => {
+        e.cancelBubble = true
+        // 双击门口 = 旋转 90°
+        const next = rotateDoorEdge(door.edge, 1)
+        n.doors = doors.map((d, i) => (i === doorIdx ? { ...d, edge: next, t: 0.5 } : d))
+        this.rebuild()
+        this.emit()
+        this.select(n.id)
+      })
+      knob.on('click tap', (e) => {
+        e.cancelBubble = true
+        this.select(n.id)
+      })
+      g.add(knob, tag)
+    })
 
     const label = new Konva.Text({
       x: n.rect.x + 16,
@@ -388,6 +449,34 @@ export class BoardEditor {
       this.rebuild()
       this.emit()
     })
+  }
+
+  /** 选中区域的门口旋转 90° */
+  rotateSelectedDoor(): void {
+    if (!this.selectedId) return
+    const node = this.scheme.nodes.find((n) => n.id === this.selectedId)
+    if (!node || node.type !== 'region') return
+    const doors = ensureDoors(node)
+    if (!doors.length) return
+    doors[0] = { ...doors[0], edge: rotateDoorEdge(doors[0].edge, 1), t: 0.5 }
+    node.doors = doors
+    this.rebuild()
+    this.emit()
+    this.select(node.id)
+  }
+
+  addDoorToSelected(): void {
+    if (!this.selectedId) return
+    const node = this.scheme.nodes.find((n) => n.id === this.selectedId)
+    if (!node || node.type !== 'region') return
+    const doors = ensureDoors(node)
+    const used = new Set(doors.map((d) => d.edge))
+    const next = (['n', 'e', 's', 'w'] as const).find((e) => !used.has(e)) ?? 's'
+    doors.push({ edge: next, t: 0.5, width: 56 })
+    node.doors = doors
+    this.rebuild()
+    this.emit()
+    this.select(node.id)
   }
 
   private renderDesk(n: DeskNode): void {

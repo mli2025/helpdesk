@@ -29,7 +29,7 @@ export function mondaySvg(mood: string): string {
   </svg>`
 }
 
-export function deskSvg(mood: string, index: number): string {
+export function deskSvg(mood: string, _index = 0): string {
   return `
   <svg class="desk-svg mood-${mood}" viewBox="0 0 160 110" aria-hidden="true">
     <ellipse cx="80" cy="100" rx="54" ry="7" fill="rgba(15,23,42,.14)"/>

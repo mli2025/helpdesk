@@ -1,193 +1,289 @@
-/** Demo mock for Monday floor-plan board */
+/** Ephemeral link + desk-file board model for Monday floor plan */
 
 export type AgentMood = 'idle' | 'busy' | 'crazy'
 
-export type TicketStatus = 'todo' | 'processing' | 'done'
+export type LinkKind = 'open' | 'dispatch' | 'finish-in' | 'writeback'
 
-export type DemandSource = '业务' | '财务' | '老板'
-
-export interface Ticket {
+export interface UserNode {
   id: string
-  title: string
-  status: TicketStatus
-  source: DemandSource
-  assignee?: 'mail-1' | 'mail-2'
-  ageSec: number
+  name: string
 }
 
-export interface Workstation {
-  id: 'mail-1' | 'mail-2'
+export interface DeskState {
+  id: 'w1' | 'w2'
   label: string
-  mood: AgentMood
-  load: number
-  currentTask?: string
+  /** pending file count at this waiter desk */
+  files: number
+}
+
+export interface Link {
+  id: string
+  kind: LinkKind
+  from: string
+  to: string
+  label: string
+  /** epoch ms when link should vanish */
+  until: number
 }
 
 export interface BoardState {
-  mondayMood: AgentMood
-  workstations: Workstation[]
-  tickets: Ticket[]
+  users: UserNode[]
+  desks: DeskState[]
+  links: Link[]
+  /** ticket counter for labels */
+  seq: number
+  /** human-readable front speech */
+  speech: string
   inboundPerMin: number
-  crazyThreshold: number
+  clockMode: 'calm' | 'busy' | 'crazy'
 }
 
-export function createInitialState(): BoardState {
-  return bumpDemo(emptyBase(), 'busy')
+export function deskMood(files: number): AgentMood {
+  if (files <= 0) return 'idle'
+  if (files > 5) return 'crazy'
+  return 'busy'
 }
 
-function emptyBase(): BoardState {
-  return {
-    mondayMood: 'idle',
-    inboundPerMin: 0,
-    crazyThreshold: 8,
-    workstations: [
-      { id: 'mail-1', label: '邮件助手 · 工位 1', mood: 'idle', load: 0 },
-      { id: 'mail-2', label: '邮件助手 · 工位 2', mood: 'idle', load: 0 },
-    ],
-    tickets: [],
-  }
-}
-
-export function deriveMondayMood(state: BoardState): AgentMood {
-  const totalLoad = state.workstations.reduce((s, w) => s + w.load, 0)
-  const pending = state.tickets.filter((t) => t.status !== 'done').length
-  if (pending >= state.crazyThreshold || totalLoad >= state.crazyThreshold) return 'crazy'
-  if (totalLoad > 0 || pending > 0) return 'busy'
+export function frontMood(desks: DeskState[]): AgentMood {
+  const total = desks.reduce((s, d) => s + d.files, 0)
+  if (desks.some((d) => d.files > 5) || total >= 8) return 'crazy'
+  if (total > 0) return 'busy'
   return 'idle'
 }
 
-export function bumpDemo(_state: BoardState, mode: 'calm' | 'busy' | 'crazy'): BoardState {
-  if (mode === 'calm') {
-    return {
-      ...emptyBase(),
-      inboundPerMin: 0,
-      mondayMood: 'idle',
-      tickets: [
-        {
-          id: 'T-1038',
-          title: '生成拜访纪要草稿',
-          status: 'done',
-          source: '业务',
-          assignee: 'mail-2',
-          ageSec: 12,
-        },
-        {
-          id: 'T-1037',
-          title: '清理重复抄送线程',
-          status: 'done',
-          source: '财务',
-          assignee: 'mail-1',
-          ageSec: 55,
-        },
-      ],
-    }
+export function createInitialState(): BoardState {
+  return {
+    users: [
+      { id: 'u1', name: '张三' },
+      { id: 'u2', name: '李四' },
+      { id: 'u3', name: '王五' },
+      { id: 'u4', name: '赵六' },
+      { id: 'u5', name: '钱七' },
+    ],
+    desks: [
+      { id: 'w1', label: '服务员 1', files: 0 },
+      { id: 'w2', label: '服务员 2', files: 0 },
+    ],
+    links: [],
+    seq: 1040,
+    speech: '窗口待命',
+    inboundPerMin: 0,
+    clockMode: 'calm',
+  }
+}
+
+function uid(prefix: string): string {
+  return `${prefix}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function pickLeastBusy(desks: DeskState[]): DeskState {
+  return [...desks].sort((a, b) => a.files - b.files || a.id.localeCompare(b.id))[0]
+}
+
+export interface PendingAction {
+  id: string
+  at: number
+  type: 'accept' | 'dispatch-end' | 'finish-in' | 'writeback' | 'writeback-end'
+  userId: string
+  deskId: 'w1' | 'w2'
+  ticket: string
+}
+
+export interface LiveState extends BoardState {
+  pending: PendingAction[]
+}
+
+export function createLiveState(): LiveState {
+  return { ...createInitialState(), pending: [] }
+}
+
+export function startBusiness(state: LiveState, now = Date.now()): LiveState {
+  const user = state.users[Math.floor(Math.random() * state.users.length)]
+  const desk = pickLeastBusy(state.desks)
+  const ticket = `T-${state.seq + 1}`
+
+  const openUntil = now + 1600
+  const dispatchEnd = openUntil + 2000
+  const workMs = state.clockMode === 'crazy' ? 1800 : state.clockMode === 'busy' ? 3200 : 4500
+  const finishInAt = dispatchEnd + workMs
+  const writebackAt = finishInAt + 1100
+  const writebackEnd = writebackAt + 2200
+
+  const openLink: Link = {
+    id: uid('open'),
+    kind: 'open',
+    from: user.id,
+    to: 'front',
+    label: `${ticket} 开单`,
+    until: openUntil,
   }
 
-  if (mode === 'busy') {
-    return {
-      ...emptyBase(),
-      inboundPerMin: 2,
-      mondayMood: 'busy',
-      workstations: [
-        {
-          id: 'mail-1',
-          label: '邮件助手 · 工位 1',
-          mood: 'busy',
-          load: 2,
-          currentTask: '整理客户附件清单',
-        },
-        {
-          id: 'mail-2',
-          label: '邮件助手 · 工位 2',
-          mood: 'idle',
-          load: 0,
-        },
-      ],
-      tickets: [
-        {
-          id: 'T-1042',
-          title: '导出上周对账邮件包',
-          status: 'processing',
-          source: '财务',
-          assignee: 'mail-1',
-          ageSec: 86,
-        },
-        {
-          id: 'T-1041',
-          title: '补发合同 PDF 到共享盘',
-          status: 'todo',
-          source: '老板',
-          ageSec: 210,
-        },
-        {
-          id: 'T-1040',
-          title: '按标签归档供应商来信',
-          status: 'todo',
-          source: '业务',
-          ageSec: 420,
-        },
-        {
-          id: 'T-1038',
-          title: '生成拜访纪要草稿',
-          status: 'done',
-          source: '业务',
-          assignee: 'mail-2',
-          ageSec: 12,
-        },
-      ],
-    }
-  }
+  const pending: PendingAction[] = [
+    {
+      id: uid('p'),
+      at: openUntil,
+      type: 'accept',
+      userId: user.id,
+      deskId: desk.id,
+      ticket,
+    },
+    {
+      id: uid('p'),
+      at: dispatchEnd,
+      type: 'dispatch-end',
+      userId: user.id,
+      deskId: desk.id,
+      ticket,
+    },
+    {
+      id: uid('p'),
+      at: finishInAt,
+      type: 'finish-in',
+      userId: user.id,
+      deskId: desk.id,
+      ticket,
+    },
+    {
+      id: uid('p'),
+      at: writebackAt,
+      type: 'writeback',
+      userId: user.id,
+      deskId: desk.id,
+      ticket,
+    },
+    {
+      id: uid('p'),
+      at: writebackEnd,
+      type: 'writeback-end',
+      userId: user.id,
+      deskId: desk.id,
+      ticket,
+    },
+  ]
 
   return {
-    ...emptyBase(),
-    inboundPerMin: 18,
-    mondayMood: 'crazy',
-    workstations: [
-      {
-        id: 'mail-1',
-        label: '邮件助手 · 工位 1',
-        mood: 'crazy',
-        load: 6,
-        currentTask: '批量回填 12 封工单…',
-      },
-      {
-        id: 'mail-2',
-        label: '邮件助手 · 工位 2',
-        mood: 'crazy',
-        load: 7,
-        currentTask: '共享盘同步风暴…',
-      },
-    ],
-    tickets: [
-      { id: 'T-1055', title: '紧急：老板要全部往来邮件', status: 'todo', source: '老板', ageSec: 40 },
-      { id: 'T-1054', title: '批量改密通知群发', status: 'todo', source: '业务', ageSec: 55 },
-      { id: 'T-1053', title: '附件超限拆包', status: 'todo', source: '财务', ageSec: 70 },
-      {
-        id: 'T-1052',
-        title: '跨盘镜像失败重试',
-        status: 'processing',
-        source: '业务',
-        assignee: 'mail-1',
-        ageSec: 120,
-      },
-      {
-        id: 'T-1051',
-        title: '客户侧会话结果回写',
-        status: 'processing',
-        source: '老板',
-        assignee: 'mail-2',
-        ageSec: 95,
-      },
-      {
-        id: 'T-1049',
-        title: '清理重复抄送线程',
-        status: 'done',
-        source: '财务',
-        assignee: 'mail-1',
-        ageSec: 20,
-      },
-      { id: 'T-1046', title: '归档供应商来信', status: 'todo', source: '业务', ageSec: 200 },
-      { id: 'T-1045', title: '对账邮件包二次导出', status: 'todo', source: '财务', ageSec: 260 },
-    ],
+    ...state,
+    seq: state.seq + 1,
+    speech: '来单了，接单中…',
+    links: [...state.links, openLink],
+    pending: [...state.pending, ...pending],
   }
+}
+
+export function tick(state: LiveState, now = Date.now()): LiveState {
+  let next: LiveState = {
+    ...state,
+    links: state.links.filter((l) => l.until > now),
+    pending: [...state.pending],
+    desks: state.desks.map((d) => ({ ...d })),
+  }
+
+  const due = next.pending.filter((p) => p.at <= now)
+  next.pending = next.pending.filter((p) => p.at > now)
+
+  for (const p of due) {
+    if (p.type === 'accept') {
+      // open line already expires via until; add dispatch line + put file on desk
+      next.links = [
+        ...next.links.filter((l) => !(l.kind === 'open' && l.label.startsWith(p.ticket))),
+        {
+          id: uid('dispatch'),
+          kind: 'dispatch',
+          from: 'front',
+          to: p.deskId,
+          label: `${p.ticket} 派单`,
+          until: now + 2000,
+        },
+      ]
+      next.desks = next.desks.map((d) =>
+        d.id === p.deskId ? { ...d, files: d.files + 1 } : d,
+      )
+      next.speech = `已派给${next.desks.find((d) => d.id === p.deskId)?.label}`
+    }
+
+    if (p.type === 'dispatch-end') {
+      next.links = next.links.filter(
+        (l) => !(l.kind === 'dispatch' && l.label.startsWith(p.ticket)),
+      )
+      next.speech = '窗口继续接单'
+    }
+
+    if (p.type === 'finish-in') {
+      // completion signal line toward AI waiter
+      next.links = [
+        ...next.links,
+        {
+          id: uid('fin'),
+          kind: 'finish-in',
+          from: 'front',
+          to: p.deskId,
+          label: `${p.ticket} 结束`,
+          until: now + 1100,
+        },
+      ]
+      next.speech = '收到完成信号'
+    }
+
+    if (p.type === 'writeback') {
+      next.links = next.links.filter(
+        (l) => !(l.kind === 'finish-in' && l.label.startsWith(p.ticket)),
+      )
+      // remove one file from desk, then line waiter → user
+      next.desks = next.desks.map((d) =>
+        d.id === p.deskId ? { ...d, files: Math.max(0, d.files - 1) } : d,
+      )
+      next.links = [
+        ...next.links,
+        {
+          id: uid('wb'),
+          kind: 'writeback',
+          from: p.deskId,
+          to: p.userId,
+          label: `${p.ticket} 回写`,
+          until: now + 2200,
+        },
+      ]
+      next.speech = '服务员回写用户'
+    }
+
+    if (p.type === 'writeback-end') {
+      next.links = next.links.filter(
+        (l) => !(l.kind === 'writeback' && l.label.startsWith(p.ticket)),
+      )
+      if (next.links.length === 0 && next.pending.length === 0) {
+        next.speech = '窗口待命'
+      }
+    }
+  }
+
+  return next
+}
+
+export function applyDemoMode(mode: 'calm' | 'busy' | 'crazy'): LiveState {
+  const base = createLiveState()
+  base.clockMode = mode
+  if (mode === 'calm') {
+    base.inboundPerMin = 0
+    base.speech = '窗口待命'
+    return base
+  }
+  if (mode === 'busy') {
+    base.inboundPerMin = 3
+    base.desks = [
+      { id: 'w1', label: '服务员 1', files: 2 },
+      { id: 'w2', label: '服务员 2', files: 0 },
+    ]
+    base.speech = '日常接单中'
+    return startBusiness(base)
+  }
+  base.inboundPerMin = 12
+  base.desks = [
+    { id: 'w1', label: '服务员 1', files: 6 },
+    { id: 'w2', label: '服务员 2', files: 7 },
+  ]
+  base.speech = '爆单！两边都在堆文件'
+  let s = startBusiness(base)
+  s = startBusiness(s, Date.now() + 50)
+  s = startBusiness(s, Date.now() + 100)
+  return s
 }

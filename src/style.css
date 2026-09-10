@@ -6,7 +6,6 @@
   --teal-deep: #0f766e;
   --amber: #f59e0b;
   --rose: #f43f5e;
-  --sky: #38bdf8;
   --line: rgba(15, 23, 42, 0.1);
   font-family: 'DM Sans', 'Noto Sans SC', system-ui, sans-serif;
   color: var(--ink);
@@ -115,7 +114,6 @@ button {
 }
 .mood-pill.mood-crazy {
   border-color: rgba(244, 63, 94, 0.45);
-  animation: pulse-border 1.1s ease-in-out infinite;
 }
 
 .map-wrap {
@@ -173,37 +171,27 @@ button {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 620px;
+  min-height: 560px;
 }
 
-.floor-base-fill {
-  fill: rgba(248, 250, 252, 0.92);
+.room.finance {
+  fill: #e0f2fe;
+  opacity: 0.7;
+}
+.room.office {
+  fill: #fef9c3;
+  opacity: 0.55;
 }
 
 .walls {
   stroke: #334155;
   stroke-width: 4;
 }
-
-.walls .door-gap {
-  stroke: #f8fafc;
-  stroke-width: 10;
-}
-
-.room-fill {
-  opacity: 0.55;
-}
-.room-fill.client {
-  fill: #e0f2fe;
-}
-.room-fill.front {
-  fill: #ccfbf1;
-}
-.room-fill.office {
-  fill: #fef3c7;
-}
-.room-fill.corridor {
-  fill: #f1f5f9;
+.walls .window-sill {
+  stroke: #0d9488;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 2 10;
 }
 
 .room-label text {
@@ -212,59 +200,65 @@ button {
   font-weight: 700;
   text-anchor: middle;
 }
-
 .room-label .sub {
   fill: #64748b;
   font-size: 12px;
   font-weight: 500;
 }
 
-.backbone path {
-  fill: none;
-  stroke: rgba(100, 116, 139, 0.22);
+.window rect {
+  fill: rgba(204, 251, 241, 0.85);
+  stroke: #0f766e;
   stroke-width: 2;
-  stroke-dasharray: 6 8;
+}
+.window .win-tag {
+  fill: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .flow {
   fill: none;
   stroke-width: 3.5;
-  stroke-linecap: round;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
   filter: url(#softGlow);
 }
-
-.flow.demand {
+.flow.open {
   stroke: #0d9488;
   stroke-dasharray: 10 8;
-  animation: dash-move 1.2s linear infinite;
-  marker-end: url(#arrowTeal);
+  animation: dash-move 1s linear infinite;
+  marker-end: url(#arrowOpen);
 }
-
-.flow.processing {
+.flow.dispatch {
   stroke: #d97706;
-  stroke-dasharray: 1 0;
   stroke-width: 4;
-  animation: pulse-stroke 1s ease-in-out infinite;
-  marker-end: url(#arrowAmber);
+  animation: pulse-stroke 0.9s ease-in-out infinite;
+  marker-end: url(#arrowDispatch);
+}
+.flow.finish-in {
+  stroke: #f43f5e;
+  stroke-dasharray: 6 6;
+  marker-end: url(#arrowDispatch);
+}
+.flow.writeback {
+  stroke: #6366f1;
+  stroke-dasharray: 5 8;
+  animation: dash-move 1.1s linear infinite;
+  marker-end: url(#arrowBack);
 }
 
-.flow.done {
-  stroke: #64748b;
-  stroke-dasharray: 4 10;
-  stroke-width: 2.5;
-  opacity: 0.7;
-  animation: dash-move 2s linear infinite;
-}
-
-.packet.demand {
+.packet.open {
   fill: #14b8a6;
 }
-.packet.processing {
+.packet.dispatch {
   fill: #f59e0b;
-  filter: url(#softGlow);
 }
-.packet.done {
-  fill: #94a3b8;
+.packet.finish-in {
+  fill: #f43f5e;
+}
+.packet.writeback {
+  fill: #6366f1;
 }
 
 .chip rect {
@@ -275,83 +269,68 @@ button {
   font-size: 11px;
   font-weight: 600;
 }
-.chip.demand rect {
+.chip.open rect {
   fill: #0f766e;
 }
-.chip.processing rect {
+.chip.dispatch rect {
   fill: #b45309;
 }
+.chip.finish-in rect {
+  fill: #be123c;
+}
+.chip.writeback rect {
+  fill: #4338ca;
+}
 
-.person-node .halo {
-  fill: rgba(56, 189, 248, 0.12);
+.user-node .halo {
+  fill: rgba(56, 189, 248, 0.1);
   transform-origin: center;
   transform-box: fill-box;
 }
-.person-node .body {
+.user-node .body {
   fill: #fff;
   stroke: #38bdf8;
   stroke-width: 2.5;
 }
-.person-node text {
-  font-size: 13px;
+.user-node text {
+  font-size: 12px;
   font-weight: 700;
   fill: #0369a1;
 }
-.person-node.active .halo {
-  animation: ping-ring 1.8s ease-out infinite;
+.user-node.active .halo {
+  animation: ping-ring 1.6s ease-out infinite;
 }
-.person-node.active .body {
+.user-node.active .body {
   stroke: #0d9488;
   fill: #ecfdf5;
 }
 
-.session-node .ring {
-  fill: none;
-  stroke: rgba(14, 165, 233, 0.45);
-  stroke-width: 2;
-  transform-origin: center;
-  transform-box: fill-box;
-  animation: expand-ring 2.6s ease-out infinite;
+.front-node .aura {
+  fill: rgba(45, 212, 191, 0.22);
 }
-.session-node .core {
-  fill: url(#nope);
-  fill: #bae6fd;
-  stroke: #0284c7;
-  stroke-width: 2;
-}
-.session-node text {
-  font-size: 14px;
-  font-weight: 700;
-  fill: #0369a1;
-}
-
-.monday-node .aura {
-  fill: rgba(45, 212, 191, 0.2);
-}
-.monday-node.mood-busy .aura {
+.front-node.mood-busy .aura {
   fill: rgba(245, 158, 11, 0.22);
   animation: heartbeat 1.15s ease-in-out infinite;
 }
-.monday-node.mood-crazy .aura {
+.front-node.mood-crazy .aura {
   fill: rgba(244, 63, 94, 0.25);
   animation: strobe 0.55s linear infinite;
 }
-
-.monday-node .speech rect {
+.front-node .caption {
+  font-size: 12px;
+  font-weight: 700;
+  fill: #0f766e;
+}
+.front-node .speech rect {
   fill: #0f172a;
 }
-.monday-node.mood-crazy .speech rect {
+.front-node.mood-crazy .speech rect {
   fill: #9f1239;
 }
-.monday-node .speech text {
+.front-node .speech text {
   fill: #f8fafc;
   font-size: 12px;
   font-weight: 600;
-}
-.monday-node .caption {
-  font-size: 13px;
-  font-weight: 700;
-  fill: var(--teal-deep);
 }
 
 .fo-wrap {
@@ -363,7 +342,7 @@ button {
 }
 
 .monday-svg {
-  width: 96px;
+  width: 88px;
   height: auto;
 }
 .monday-svg .body {
@@ -378,13 +357,12 @@ button {
 }
 
 .desk-node .desk-pad {
-  fill: rgba(255, 255, 255, 0.72);
+  fill: rgba(255, 255, 255, 0.78);
   stroke: rgba(15, 23, 42, 0.08);
   stroke-width: 1.5;
 }
 .desk-node.mood-busy .desk-pad {
   stroke: rgba(245, 158, 11, 0.55);
-  filter: url(#softGlow);
 }
 .desk-node.mood-crazy .desk-pad {
   stroke: rgba(244, 63, 94, 0.55);
@@ -392,19 +370,25 @@ button {
 }
 
 .desk-svg {
-  width: 140px;
+  width: 130px;
   height: auto;
 }
 .desk-svg.mood-busy .worker,
 .desk-svg.mood-crazy .worker {
   animation: type-bob 0.55s ease-in-out infinite;
 }
-.desk-svg.mood-busy .screen,
-.desk-svg.mood-crazy .screen {
-  animation: screen-glow 1.2s ease-in-out infinite;
-}
 .desk-svg.mood-crazy .mail-stack {
   animation: paper-fly 0.7s ease-in-out infinite;
+}
+
+.files .file {
+  fill: #fde68a;
+  stroke: #d97706;
+  stroke-width: 1;
+}
+.files .file.overflow {
+  fill: #fecdd3;
+  stroke: #e11d48;
 }
 
 .desk-title {
@@ -416,65 +400,31 @@ button {
   font-size: 11px;
   fill: #64748b;
 }
-.desk-task {
+.desk-hint {
   font-size: 11px;
   font-weight: 600;
   fill: #0f766e;
 }
-
-.share-node rect {
-  fill: #fff;
-  stroke: #94a3b8;
-  stroke-width: 2;
-  stroke-dasharray: 5 4;
-}
-.share-node text {
-  font-size: 14px;
-  font-weight: 700;
-  fill: #334155;
-}
-.share-node .sub {
-  font-size: 11px;
-  font-weight: 500;
-  fill: #64748b;
-}
-
-.tray rect {
-  fill: rgba(255, 255, 255, 0.9);
-  stroke-width: 2;
-}
-.tray text {
-  font-size: 13px;
-  font-weight: 700;
-  fill: #0f172a;
-}
-.tray .sub {
-  font-size: 11px;
-  font-weight: 500;
-  fill: #64748b;
-}
-.tray.todo rect {
-  stroke: #38bdf8;
-}
-.tray.processing rect {
-  stroke: #f59e0b;
-}
-.tray.done rect {
-  stroke: #14b8a6;
+.desk-node.mood-crazy .desk-hint {
+  fill: #be123c;
 }
 
 .map-legend text {
   font-size: 12px;
   fill: #64748b;
 }
-.map-legend .lg.demand {
+.map-legend .sub {
+  font-size: 11px;
+  fill: #94a3b8;
+}
+.map-legend .lg.open {
   fill: #14b8a6;
 }
-.map-legend .lg.processing {
+.map-legend .lg.dispatch {
   fill: #f59e0b;
 }
-.map-legend .lg.done {
-  fill: #94a3b8;
+.map-legend .lg.writeback {
+  fill: #6366f1;
 }
 
 .shell.mood-crazy .map-wrap {
@@ -489,7 +439,6 @@ button {
     stroke-dashoffset: -36;
   }
 }
-
 @keyframes pulse-stroke {
   0%,
   100% {
@@ -499,7 +448,6 @@ button {
     opacity: 1;
   }
 }
-
 @keyframes ping-ring {
   0% {
     transform: scale(0.85);
@@ -510,18 +458,6 @@ button {
     opacity: 0;
   }
 }
-
-@keyframes expand-ring {
-  0% {
-    transform: scale(0.85);
-    opacity: 0.85;
-  }
-  100% {
-    transform: scale(1.45);
-    opacity: 0;
-  }
-}
-
 @keyframes breathe {
   0%,
   100% {
@@ -531,7 +467,6 @@ button {
     transform: translateY(-3px) scale(1.02);
   }
 }
-
 @keyframes nod {
   0%,
   100% {
@@ -541,7 +476,6 @@ button {
     transform: rotate(-2.5deg);
   }
 }
-
 @keyframes shake {
   0%,
   100% {
@@ -554,7 +488,6 @@ button {
     transform: translate(2px, -1px) rotate(2deg);
   }
 }
-
 @keyframes heartbeat {
   0%,
   100% {
@@ -565,15 +498,11 @@ button {
     transform: scale(1.08);
     opacity: 1;
   }
-  30% {
-    transform: scale(0.94);
-  }
   45% {
     transform: scale(1.12);
     opacity: 1;
   }
 }
-
 @keyframes strobe {
   0%,
   100% {
@@ -585,7 +514,6 @@ button {
     transform: scale(1.1);
   }
 }
-
 @keyframes type-bob {
   0%,
   100% {
@@ -595,17 +523,6 @@ button {
     transform: translateY(2px);
   }
 }
-
-@keyframes screen-glow {
-  0%,
-  100% {
-    fill: #134e4a;
-  }
-  50% {
-    fill: #0f766e;
-  }
-}
-
 @keyframes paper-fly {
   0%,
   100% {
@@ -615,7 +532,6 @@ button {
     transform: translate(4px, -6px) rotate(8deg);
   }
 }
-
 @keyframes card-warn {
   0%,
   100% {
@@ -626,24 +542,11 @@ button {
   }
 }
 
-@keyframes pulse-border {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.25);
-  }
-  50% {
-    box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.08);
-  }
-}
-
 @media (max-width: 900px) {
-  .floor-svg {
-    min-height: 480px;
-  }
-
   .demo-float {
     position: static;
     margin: 10px;
     width: fit-content;
+    flex-wrap: wrap;
   }
 }

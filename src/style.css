@@ -82,12 +82,36 @@ button.tool.on {
   flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   flex-wrap: wrap;
-  padding: 10px 14px;
+  padding: 8px 12px;
   background: #12141a;
   border-bottom: 1px solid var(--line);
+}
+
+.efp-mode .efp-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  background: #e2e8f0;
+}
+
+.efp-host {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.efp-host easy-floorplan-card-editor {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
 }
 
 .brand {

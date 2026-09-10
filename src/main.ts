@@ -27,7 +27,7 @@ function render(): void {
             </div>
           </div>
           <div class="bar-actions">
-            <button type="button" data-act="reset">重置示例户型</button>
+            <button type="button" data-act="reset">重置适配一屏的示例</button>
             <button type="button" class="accent" data-act="preview">显示看板演示</button>
           </div>
         </header>

@@ -6,7 +6,7 @@ import 'easy-floorplan/editor'
 import type { FloorplanCardConfig } from 'easy-floorplan/types'
 import { mondayOfficePlan } from './mondayOfficePlan'
 
-const STORE_KEY = 'monday.easyFloorplan.config.v6'
+const STORE_KEY = 'monday.easyFloorplan.config.v7'
 
 export type EasyFloorConfig = FloorplanCardConfig
 
@@ -68,6 +68,7 @@ export function resetEasyFloorConfig(): void {
   localStorage.removeItem('monday.easyFloorplan.config.v3')
   localStorage.removeItem('monday.easyFloorplan.config.v4')
   localStorage.removeItem('monday.easyFloorplan.config.v5')
+  localStorage.removeItem('monday.easyFloorplan.config.v6')
 }
 
 function planSize(ed: HTMLElement): { w: number; h: number } {
@@ -325,12 +326,19 @@ export function mountEasyFloorEditor(host: HTMLElement): {
   }
   ed.addEventListener('config-changed', onChange)
 
+  const onStandaloneApply = (ev: Event) => {
+    ev.preventDefault()
+    saveEasyFloorConfig(cfg)
+  }
+  ed.addEventListener('easy-floorplan-standalone-apply', onStandaloneApply)
+
   return {
     getConfig: () => cfg,
     destroy: () => {
       mo.disconnect()
       ro.disconnect()
       ed.removeEventListener('config-changed', onChange)
+      ed.removeEventListener('easy-floorplan-standalone-apply', onStandaloneApply)
       ed.remove()
     },
   }

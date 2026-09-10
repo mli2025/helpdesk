@@ -329,6 +329,8 @@ export function mondayOfficePlan(): FloorplanCardConfig {
     width: W,
     height: H,
     grid: 20,
+    // 绝对吸附步长 5（网格 20 的 25%）— 鼠标拖动不再一格跳 20
+    snap: 5,
     skin: 'odnetnin',
     background: '#faf8f4',
     compactHeader: true,

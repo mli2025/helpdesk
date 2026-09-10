@@ -241,18 +241,23 @@ button.tool.on {
   min-height: 0;
   overflow: hidden;
   position: relative;
-  background: #111;
+  background: #e2e8f0;
 }
 
 .efp-host {
   position: absolute;
   inset: 0;
-  overflow: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .efp-host easy-floorplan-card-editor {
-  display: block;
-  min-height: 100%;
+  display: flex !important;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
 }
 
 .bar a {

@@ -3,6 +3,7 @@ import type { BoardScheme, BoardNode, DeskNode, LinkEdge, RegionNode, DeskKind }
 import { uid } from './types'
 import { deskPcSvg, personSvg, robotSvg, frontBadgeSvg, svgToDataUrl } from './icons'
 import type { CatalogAgent, CatalogPerson } from './catalog'
+import { ensureDoors, wallSegments } from './floorRender'
 
 export type EditorTool = 'select' | 'region' | 'desk-human' | 'desk-front' | 'desk-agent' | 'link'
 
@@ -130,12 +131,23 @@ export class BoardEditor {
     this.layerGrid.destroyChildren()
     const w = this.stage.width()
     const h = this.stage.height()
-    const step = 20
+    // 图1：深色户型底
+    this.layerGrid.add(
+      new Konva.Rect({
+        x: 0,
+        y: 0,
+        width: w,
+        height: h,
+        fill: '#141416',
+        listening: false,
+      }),
+    )
+    const step = 40
     for (let x = 0; x < w; x += step) {
       this.layerGrid.add(
         new Konva.Line({
           points: [x, 0, x, h],
-          stroke: x % 100 === 0 ? '#cbd5e1' : '#e2e8f0',
+          stroke: 'rgba(255,255,255,0.04)',
           strokeWidth: 1,
           listening: false,
         }),
@@ -145,7 +157,7 @@ export class BoardEditor {
       this.layerGrid.add(
         new Konva.Line({
           points: [0, y, w, y],
-          stroke: y % 100 === 0 ? '#cbd5e1' : '#e2e8f0',
+          stroke: 'rgba(255,255,255,0.04)',
           strokeWidth: 1,
           listening: false,
         }),
@@ -166,8 +178,8 @@ export class BoardEditor {
           y: pos.y,
           width: 0,
           height: 0,
-          fill: 'rgba(56,189,248,0.2)',
-          stroke: '#0284c7',
+          fill: 'rgba(59,130,246,0.08)',
+          stroke: '#3b82f6',
           strokeWidth: 2,
           dash: [6, 4],
         })
@@ -200,8 +212,9 @@ export class BoardEditor {
             type: 'region',
             name: '未命名区域',
             rect: { x: r.x(), y: r.y(), w, h },
-            fill: '#e0f2fe',
-            stroke: '#0284c7',
+            fill: 'transparent',
+            stroke: '#f8fafc',
+            doors: [{ edge: 's', t: 0.5, width: 56 }],
           }
           this.scheme.nodes.push(region)
           this.emit()
@@ -275,40 +288,59 @@ export class BoardEditor {
   }
 
   private renderRegion(n: RegionNode): void {
-    const g = new Konva.Group({ id: n.id, draggable: this.tool === 'select' || true })
-    const rect = new Konva.Rect({
+    const g = new Konva.Group({ id: n.id, draggable: true })
+    // hit area (invisible fill for select/drag)
+    const hit = new Konva.Rect({
       x: n.rect.x,
       y: n.rect.y,
       width: n.rect.w,
       height: n.rect.h,
-      fill: n.fill,
-      opacity: 0.55,
-      stroke: n.stroke,
-      strokeWidth: 2,
-      cornerRadius: 16,
+      fill: 'rgba(255,255,255,0.03)',
       name: 'body',
     })
+    g.add(hit)
+
+    // 图1：白线墙体 + 门洞缺口
+    const doors = ensureDoors(n)
+    const segs = wallSegments(n.rect, doors)
+    for (const s of segs) {
+      g.add(
+        new Konva.Line({
+          points: [s.x1, s.y1, s.x2, s.y2],
+          stroke: '#f1f5f9',
+          strokeWidth: this.selectedId === n.id ? 3.5 : 2.25,
+          lineCap: 'square',
+          listening: false,
+        }),
+      )
+    }
+
+    // door tick marks (optional visual)
+    for (const d of doors) {
+      // small gap indicator already by missing segment
+      void d
+    }
+
     const label = new Konva.Text({
-      x: n.rect.x + 12,
-      y: n.rect.y + 10,
+      x: n.rect.x + 16,
+      y: n.rect.y + 16,
       text: n.name,
-      fontSize: 16,
-      fontStyle: 'bold',
-      fill: '#0f172a',
+      fontSize: 18,
+      fontFamily: 'Noto Sans SC, DM Sans, sans-serif',
+      fill: '#e2e8f0',
       listening: false,
     })
-    // resize handle
     const handle = new Konva.Rect({
       x: n.rect.x + n.rect.w - 14,
       y: n.rect.y + n.rect.h - 14,
       width: 14,
       height: 14,
-      fill: n.stroke,
-      cornerRadius: 3,
+      fill: '#3b82f6',
+      cornerRadius: 2,
       name: 'resize',
       draggable: true,
     })
-    g.add(rect, label, handle)
+    g.add(label, handle)
     this.layerRegion.add(g)
     this.nodeMap.set(n.id, g)
 
@@ -347,8 +379,8 @@ export class BoardEditor {
       const ny = handle.y()
       n.rect.w = Math.max(80, nx - n.rect.x + 14)
       n.rect.h = Math.max(80, ny - n.rect.y + 14)
-      rect.width(n.rect.w)
-      rect.height(n.rect.h)
+      hit.width(n.rect.w)
+      hit.height(n.rect.h)
       handle.position({ x: n.rect.x + n.rect.w - 14, y: n.rect.y + n.rect.h - 14 })
       this.layerRegion.batchDraw()
     })

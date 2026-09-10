@@ -26,6 +26,8 @@ export interface RegionNode {
   rect: Rect
   fill: string
   stroke: string
+  /** 墙体开口（门/窗口）；缺省南墙居中一门 */
+  doors?: { edge: 'n' | 's' | 'e' | 'w'; t: number; width: number }[]
 }
 
 export interface DeskNode {
@@ -89,17 +91,19 @@ export function sampleScheme(): BoardScheme {
     id: uid('r'),
     type: 'region',
     name: '财务部',
-    rect: { x: 40, y: 40, w: 420, h: 700 },
-    fill: '#e0f2fe',
-    stroke: '#0284c7',
+    rect: { x: 60, y: 60, w: 380, h: 640 },
+    fill: 'transparent',
+    stroke: '#f8fafc',
+    doors: [{ edge: 'e', t: 0.48, width: 64 }],
   }
   const office: RegionNode = {
     id: uid('r'),
     type: 'region',
     name: 'AI 办公室',
-    rect: { x: 500, y: 40, w: 820, h: 700 },
-    fill: '#fef9c3',
-    stroke: '#ca8a04',
+    rect: { x: 520, y: 60, w: 760, h: 640 },
+    fill: 'transparent',
+    stroke: '#f8fafc',
+    doors: [{ edge: 'w', t: 0.48, width: 64 }],
   }
   const front: DeskNode = {
     id: uid('d'),
@@ -107,7 +111,7 @@ export function sampleScheme(): BoardScheme {
     kind: 'front',
     style: 'desk-pc',
     name: '中继前台',
-    x: 520,
+    x: 540,
     y: 320,
     status: 'idle',
   }
@@ -117,7 +121,7 @@ export function sampleScheme(): BoardScheme {
     kind: 'agent',
     style: 'desk-pc',
     name: '邮件助手-1',
-    x: 860,
+    x: 880,
     y: 180,
     agentId: 'agent_mail_1',
     status: 'idle',
@@ -128,7 +132,7 @@ export function sampleScheme(): BoardScheme {
     kind: 'agent',
     style: 'desk-pc',
     name: '邮件助手-2',
-    x: 860,
+    x: 880,
     y: 420,
     agentId: 'agent_mail_2',
     status: 'idle',

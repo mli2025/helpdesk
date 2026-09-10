@@ -1,12 +1,11 @@
 :root {
-  color-scheme: light;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --bg: #f1f5f9;
-  --panel: #ffffff;
-  --teal: #0f766e;
-  --primary: #0d9488;
+  color-scheme: dark;
+  --ink: #e2e8f0;
+  --muted: #94a3b8;
+  --line: #2a2d34;
+  --bg: #0b0c0f;
+  --panel: #15171c;
+  --primary: #3b82f6;
   font-family: 'DM Sans', 'Noto Sans SC', system-ui, sans-serif;
   color: var(--ink);
   background: var(--bg);
@@ -27,32 +26,33 @@ button,
 input,
 select {
   font: inherit;
+  color: var(--ink);
 }
 
 button {
   cursor: pointer;
   border: 1px solid var(--line);
-  background: #fff;
+  background: #1c1f26;
   border-radius: 10px;
   padding: 7px 12px;
 }
 
 button.primary {
-  background: linear-gradient(135deg, #2dd4bf, #0d9488);
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
   color: #fff;
   border-color: transparent;
 }
 
 button.accent {
-  background: #0f172a;
-  color: #fff;
+  background: #f8fafc;
+  color: #0f172a;
   border-color: transparent;
 }
 
 button.danger {
-  background: #fff1f2;
-  color: #be123c;
-  border-color: #fecdd3;
+  background: #3f1d24;
+  color: #fda4af;
+  border-color: #7f1d1d;
   width: 100%;
   margin-top: 12px;
 }
@@ -64,8 +64,8 @@ button.tool {
 }
 
 button.tool.on {
-  border-color: #14b8a6;
-  background: #ecfdf5;
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
   font-weight: 600;
 }
 
@@ -82,7 +82,7 @@ button.tool.on {
   align-items: center;
   flex-wrap: wrap;
   padding: 10px 14px;
-  background: #fff;
+  background: #12141a;
   border-bottom: 1px solid var(--line);
 }
 
@@ -119,11 +119,13 @@ button.tool.on {
   align-items: center;
 }
 
-.name-input {
-  min-width: 160px;
+.name-input,
+.bar-actions select {
+  min-width: 140px;
   padding: 7px 10px;
   border-radius: 10px;
   border: 1px solid var(--line);
+  background: #1c1f26;
 }
 
 .workspace {
@@ -149,9 +151,8 @@ button.tool.on {
 .palette h3,
 .inspector h3 {
   margin: 12px 0 8px;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--muted);
-  text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
@@ -162,7 +163,7 @@ button.tool.on {
 .canvas-wrap {
   min-width: 0;
   min-height: 0;
-  background: #f8fafc;
+  background: #141416;
 }
 
 #board-canvas {
@@ -187,7 +188,7 @@ button.tool.on {
   border-radius: 10px;
   border: 1px solid var(--line);
   color: var(--ink);
-  background: #fff;
+  background: #1c1f26;
 }
 
 .empty-insp,
@@ -197,103 +198,39 @@ button.tool.on {
   line-height: 1.5;
 }
 
-.view-canvas {
-  position: relative;
-  overflow: auto;
+.view-canvas.iso {
   flex: 1;
-  margin: 12px;
-  border-radius: 16px;
-  border: 1px solid var(--line);
-  background: #fff;
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: #050505;
+  overflow: auto;
+  min-height: 0;
 }
 
-.v-region {
+.iso-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 680px;
+}
+
+.iso-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 680px;
+}
+
+.iso-hint {
   position: absolute;
-  border: 2px solid;
-  border-radius: 16px;
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.v-region span {
-  display: inline-block;
-  margin: 10px 12px;
-  font-weight: 700;
-}
-
-.v-desk {
-  position: absolute;
-  width: 140px;
-  height: 128px;
-  background: #fff;
-  border: 2px solid #cbd5e1;
-  border-radius: 14px;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-  overflow: hidden;
-}
-
-.v-desk.kind-front {
-  border-color: #0f766e;
-}
-.v-desk.kind-agent {
-  border-color: #d97706;
-}
-.v-desk.kind-human {
-  border-color: #0284c7;
-}
-
-.v-desk.status-busy {
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-.v-desk.status-crazy {
-  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.3);
-  animation: pulse 1s ease-in-out infinite;
-}
-
-.vd-name {
-  position: absolute;
-  left: 8px;
-  top: 6px;
+  left: 16px;
+  bottom: 14px;
   font-size: 12px;
-  font-weight: 700;
-  z-index: 2;
-}
-
-.vd-desk {
-  position: absolute;
-  left: 10px;
-  top: 28px;
-  width: 120px;
-}
-
-.vd-figure {
-  position: absolute;
-  right: 4px;
-  top: 2px;
-}
-
-.vd-figure img {
-  width: 48px;
-  height: auto;
-}
-
-.vd-meta {
-  position: absolute;
-  left: 10px;
-  bottom: 8px;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.65);
+  padding: 6px 10px;
+  border-radius: 999px;
 }
 
 @media (max-width: 1100px) {

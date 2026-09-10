@@ -13,7 +13,7 @@ import {
   setActiveSchemeId,
 } from './storage'
 import type { BoardScheme, DeskNode, LinkEdge, RegionNode } from './types'
-import { deskPcSvg, personSvg, robotSvg, frontBadgeSvg, svgToDataUrl } from './icons'
+import { renderIsoPreview } from './isoPreview'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 
@@ -37,11 +37,20 @@ function renderInspector(): string {
 
   if (item.type === 'region') {
     const n = item as RegionNode
+    const door = n.doors?.[0] ?? { edge: 's', t: 0.5, width: 56 }
     return `
-      <h3>区域</h3>
+      <h3>区域（图1 线框墙）</h3>
       <label>名称<input data-f="name" value="${escapeAttr(n.name)}" /></label>
-      <label>填充色<input data-f="fill" type="color" value="${toHex(n.fill)}" /></label>
-      <label>边框色<input data-f="stroke" type="color" value="${toHex(n.stroke)}" /></label>
+      <label>门洞方向
+        <select data-door-edge>
+          <option value="n" ${door.edge === 'n' ? 'selected' : ''}>北墙</option>
+          <option value="s" ${door.edge === 's' ? 'selected' : ''}>南墙</option>
+          <option value="e" ${door.edge === 'e' ? 'selected' : ''}>东墙</option>
+          <option value="w" ${door.edge === 'w' ? 'selected' : ''}>西墙</option>
+        </select>
+      </label>
+      <label>门洞宽度<input data-door-w type="range" min="36" max="120" value="${door.width}" /></label>
+      <p class="hint">设计态白线墙体+缺口；预览态渲染为图2立体墙。</p>
       <button type="button" class="danger" data-del>删除区域</button>`
   }
 
@@ -148,7 +157,7 @@ function renderEditShell(): void {
           <div class="logo">一</div>
           <div>
             <div class="title">星期一 · 看板绘图</div>
-            <div class="sub">拖区域 / 摆工位 / 绑 skill-admin / 调连线 / 保存方案</div>
+            <div class="sub">设计态图1线框 · 预览态图2立体墙</div>
           </div>
         </div>
         <div class="bar-actions">
@@ -249,6 +258,18 @@ function refreshInspector(): void {
       input.addEventListener('input', apply)
     }
   })
+
+  const applyDoor = () => {
+    if (!editor || !selectedId) return
+    const edge = (el.querySelector('[data-door-edge]') as HTMLSelectElement | null)?.value ?? 's'
+    const width = Number((el.querySelector('[data-door-w]') as HTMLInputElement | null)?.value ?? 56)
+    editor.updateSelected({
+      doors: [{ edge, t: 0.5, width }],
+    })
+  }
+  el.querySelector('[data-door-edge]')?.addEventListener('change', applyDoor)
+  el.querySelector('[data-door-w]')?.addEventListener('input', applyDoor)
+
   el.querySelector('[data-del]')?.addEventListener('click', () => {
     editor?.deleteSelected()
     selectedId = null
@@ -340,111 +361,30 @@ function bindChrome(): void {
 }
 
 function renderViewer(): void {
-  const desks = scheme.nodes.filter((n) => n.type === 'desk') as DeskNode[]
-  const regions = scheme.nodes.filter((n) => n.type === 'region') as RegionNode[]
-
   app.innerHTML = `
     <div class="app-shell view-mode">
-      <header class="bar">
+      <header class="bar dark">
         <div class="brand">
           <div class="logo">一</div>
           <div>
             <div class="title">${escapeAttr(scheme.name)}</div>
-            <div class="sub">看板显示 · 方案已保存后在此运行</div>
+            <div class="sub">预览看板 · 图2 等距立体墙体</div>
           </div>
         </div>
         <div class="bar-actions">
-          <button type="button" class="primary" data-act="edit">返回绘图</button>
+          <button type="button" class="primary" data-act="edit">返回绘图（图1线框）</button>
         </div>
       </header>
-      <div class="view-canvas" id="view-canvas"></div>
+      <div class="view-canvas iso" id="view-canvas"></div>
     </div>
   `
 
-  const root = app.querySelector<HTMLDivElement>('#view-canvas')!
-  root.style.position = 'relative'
-  root.style.width = '100%'
-  root.style.minHeight = '720px'
-  root.style.background = '#f8fafc'
-
-  for (const r of regions) {
-    const el = document.createElement('div')
-    el.className = 'v-region'
-    el.style.left = `${r.rect.x}px`
-    el.style.top = `${r.rect.y}px`
-    el.style.width = `${r.rect.w}px`
-    el.style.height = `${r.rect.h}px`
-    el.style.background = r.fill
-    el.style.borderColor = r.stroke
-    el.innerHTML = `<span>${r.name}</span>`
-    root.appendChild(el)
-  }
-
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  svg.setAttribute('class', 'v-links')
-  svg.style.position = 'absolute'
-  svg.style.inset = '0'
-  svg.style.width = '100%'
-  svg.style.height = '100%'
-  svg.style.pointerEvents = 'none'
-  for (const l of scheme.links) {
-    const a = center(l.fromId)
-    const b = center(l.toId)
-    const midX = (a.x + b.x) / 2
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    path.setAttribute(
-      'd',
-      `M ${a.x} ${a.y} L ${midX} ${a.y} L ${midX} ${b.y} L ${b.x} ${b.y}`,
-    )
-    path.setAttribute('fill', 'none')
-    path.setAttribute('stroke', l.color)
-    path.setAttribute('stroke-width', String(l.width))
-    path.setAttribute('marker-end', 'url(#arrow)')
-    svg.appendChild(path)
-  }
-  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
-  defs.innerHTML = `<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker>`
-  svg.prepend(defs)
-  root.appendChild(svg)
-
-  for (const d of desks) {
-    const el = document.createElement('div')
-    el.className = `v-desk kind-${d.kind} status-${d.status}`
-    el.style.left = `${d.x}px`
-    el.style.top = `${d.y}px`
-    const figure =
-      d.kind === 'agent'
-        ? `<img alt="" src="${svgToDataUrl(robotSvg())}" />`
-        : d.kind === 'human'
-          ? `<img alt="" src="${svgToDataUrl(personSvg(d.gender ?? 'male'))}" />`
-          : `<img alt="" src="${svgToDataUrl(frontBadgeSvg())}" />`
-    el.innerHTML = `
-      <div class="vd-name">${d.name}</div>
-      <img class="vd-desk" alt="" src="${svgToDataUrl(deskPcSvg())}" />
-      <div class="vd-figure">${figure}</div>
-      <div class="vd-meta">${statusLabel(d.status)}</div>
-    `
-    root.appendChild(el)
-  }
-
-  function center(id: string): { x: number; y: number } {
-    const n = scheme.nodes.find((x) => x.id === id)
-    if (!n) return { x: 0, y: 0 }
-    if (n.type === 'region') return { x: n.rect.x + n.rect.w / 2, y: n.rect.y + n.rect.h / 2 }
-    return { x: n.x + 70, y: n.y + 64 }
-  }
+  renderIsoPreview(scheme, app.querySelector('#view-canvas')!)
 
   app.querySelector('[data-act="edit"]')?.addEventListener('click', () => {
     mode = 'edit'
     render()
   })
-}
-
-function statusLabel(s: string): string {
-  if (s === 'busy') return '忙碌'
-  if (s === 'crazy') return '抓狂'
-  if (s === 'offline') return '离线'
-  return '空闲'
 }
 
 function render(): void {

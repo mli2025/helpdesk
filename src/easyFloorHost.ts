@@ -4,73 +4,14 @@
  */
 import 'easy-floorplan/editor'
 import type { FloorplanCardConfig } from 'easy-floorplan/types'
-import { emptyConfig, newPlanConfig } from 'easy-floorplan/types'
+import { mondayOfficePlan } from './mondayOfficePlan'
 
-const STORE_KEY = 'monday.easyFloorplan.config.v5'
+const STORE_KEY = 'monday.easyFloorplan.config.v6'
 
 export type EasyFloorConfig = FloorplanCardConfig
 
-/** 适配常见笔记本窗口的默认户型（约 16:9） */
 export function defaultOfficePlan(): FloorplanCardConfig {
-  return {
-    ...emptyConfig('custom:easy-floorplan-card'),
-    ...newPlanConfig(),
-    width: 900,
-    height: 480,
-    grid: 20,
-    skin: 'odnetnin',
-    background: '#fffdf7',
-    compactHeader: true,
-    floors: [
-      {
-        id: 'office',
-        name: '办公平面',
-        walls: [
-          // 财务部
-          { id: 'w1', x1: 40, y1: 40, x2: 320, y2: 40, thickness: 8 },
-          { id: 'w2', x1: 320, y1: 40, x2: 320, y2: 200, thickness: 8 },
-          { id: 'w3', x1: 320, y1: 280, x2: 320, y2: 440, thickness: 8 },
-          { id: 'w4', x1: 320, y1: 440, x2: 40, y2: 440, thickness: 8 },
-          { id: 'w5', x1: 40, y1: 440, x2: 40, y2: 40, thickness: 8 },
-          // AI 办公室
-          { id: 'w6', x1: 400, y1: 40, x2: 860, y2: 40, thickness: 8 },
-          { id: 'w7', x1: 860, y1: 40, x2: 860, y2: 440, thickness: 8 },
-          { id: 'w8', x1: 860, y1: 440, x2: 400, y2: 440, thickness: 8 },
-          { id: 'w9', x1: 400, y1: 440, x2: 400, y2: 280, thickness: 8 },
-          { id: 'w10', x1: 400, y1: 200, x2: 400, y2: 40, thickness: 8 },
-        ],
-        openings: [
-          {
-            id: 'd_finance',
-            type: 'door',
-            x: 320,
-            y: 240,
-            length: 64,
-            angle: 90,
-            motion: 'swing',
-          },
-          {
-            id: 'd_ai',
-            type: 'door',
-            x: 400,
-            y: 240,
-            length: 64,
-            angle: 90,
-            motion: 'swing',
-            flipH: true,
-          },
-        ],
-        items: [],
-        texts: [
-          { id: 't1', x: 100, y: 80, text: '财务部', size: 24, color: '#111111' },
-          { id: 't2', x: 560, y: 80, text: 'AI 办公室', size: 24, color: '#111111' },
-        ],
-        furniture: [],
-        trackers: [],
-        areas: [],
-      },
-    ],
-  } as FloorplanCardConfig
+  return mondayOfficePlan()
 }
 
 export function enforceSinglePlane(cfg: FloorplanCardConfig): FloorplanCardConfig {
@@ -94,8 +35,8 @@ export function enforceSinglePlane(cfg: FloorplanCardConfig): FloorplanCardConfi
     ...cfg,
     skin: cfg.skin || 'odnetnin',
     background: cfg.background || '#fffdf7',
-    width: cfg.width || 900,
-    height: cfg.height || 480,
+    width: cfg.width || 1200,
+    height: cfg.height || 720,
     floors,
     walls: undefined,
     openings: undefined,
@@ -126,12 +67,13 @@ export function resetEasyFloorConfig(): void {
   localStorage.removeItem('monday.easyFloorplan.config')
   localStorage.removeItem('monday.easyFloorplan.config.v3')
   localStorage.removeItem('monday.easyFloorplan.config.v4')
+  localStorage.removeItem('monday.easyFloorplan.config.v5')
 }
 
 function planSize(ed: HTMLElement): { w: number; h: number } {
   return {
-    w: Number(ed.getAttribute('data-plan-w') || 900),
-    h: Number(ed.getAttribute('data-plan-h') || 480),
+    w: Number(ed.getAttribute('data-plan-w') || 1200),
+    h: Number(ed.getAttribute('data-plan-h') || 720),
   }
 }
 
@@ -313,8 +255,8 @@ export function mountEasyFloorEditor(host: HTMLElement): {
   }
 
   let cfg = loadEasyFloorConfig()
-  ed.setAttribute('data-plan-w', String(cfg.width || 900))
-  ed.setAttribute('data-plan-h', String(cfg.height || 480))
+  ed.setAttribute('data-plan-w', String(cfg.width || 1200))
+  ed.setAttribute('data-plan-h', String(cfg.height || 720))
 
   ed.hass = {
     states: {},
@@ -374,8 +316,8 @@ export function mountEasyFloorEditor(host: HTMLElement): {
     const detail = (ev as CustomEvent<{ config: FloorplanCardConfig }>).detail
     if (detail?.config) {
       cfg = enforceSinglePlane(detail.config)
-      ed.setAttribute('data-plan-w', String(cfg.width || 900))
-      ed.setAttribute('data-plan-h', String(cfg.height || 480))
+      ed.setAttribute('data-plan-w', String(cfg.width || 1200))
+      ed.setAttribute('data-plan-h', String(cfg.height || 720))
       saveEasyFloorConfig(cfg)
       if ((detail.config.floors?.length ?? 0) > 1) ed.setConfig(cfg)
     }

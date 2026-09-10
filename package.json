@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "efp:clone": "git clone --depth 1 https://github.com/nicosandller/easy-floorplan.git E:/easy-floorplan"
   },
   "devDependencies": {
     "@types/node": "^22.20.2",
@@ -15,6 +16,8 @@
     "vite": "^8.2.2"
   },
   "dependencies": {
-    "konva": "^10.5.0"
+    "custom-card-helpers": "^1.9.0",
+    "konva": "^10.5.0",
+    "lit": "^3.3.3"
   }
 }

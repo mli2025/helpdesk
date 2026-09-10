@@ -1,41 +1,30 @@
 # 星期一 · Monday Helpdesk
 
-看板 **绘图工具** + 方案保存 + 显示。
+户型设计直接采用开源 [**easy-floorplan**](https://github.com/nicosandller/easy-floorplan)（MIT，Nicolas Sandller）。
 
-仓库：https://github.com/mli2025/helpdesk.git
+## 本地运行
 
-## 你怎么用
+需同时存在：
+
+- `E:\helpdesk`（本仓库）
+- `E:\easy-floorplan`（`git clone https://github.com/nicosandller/easy-floorplan.git`）
 
 ```bash
+cd E:\helpdesk
 npm install
 npx vite --host 127.0.0.1 --port 5173
 ```
 
 打开 http://127.0.0.1:5173
 
-## 门洞
+## 怎么用
 
-选中区域后：
-- 右侧 **旋转门口 90°**（或画布上 **双击蓝点**）
-- 拖蓝点沿墙移动缺口
-- 可再加门洞
+1. **户型设计**：真实 easy-floorplan 编辑器  
+   - 画墙、放门/窗、门口吸附墙体、旋转/翻转  
+2. **显示看板演示**：用已保存户型 + 定时开单/派单/回写连线（走门口）
 
-Git 上可参考的现成户型/门洞交互（未整仓迁入，避免绑死 React/HA）：
+## 说明
 
-- [BipulRaman/Khaaka](https://github.com/BipulRaman/Khaaka) — 门/窗可旋转，单页户型编辑
-- [nicosandller/easy-floorplan](https://github.com/nicosandller/easy-floorplan) — 门吸附墙体、可翻面
-- [cvdlab/react-planner](https://github.com/cvdlab/react-planner) — 成熟 2D/3D 平面图（体量大，React）
-- [@opengeometry/openplans](https://www.npmjs.com/package/@opengeometry/openplans) — BIM 向门窗 API
-
-skill-admin 地址可在左侧填写；留空则用内置模拟数据。接口约定：
-
-- `GET {base}/api/users` → `[{ id, name, gender, dept? }]`
-- `GET {base}/api/agents` → `[{ id, name, skill }]`
-
-方案存在浏览器 `localStorage`，可导出/导入 JSON。
-
-## 后续
-
-- 工位样式扩到三类  
-- 显示态接真实开单连线动画（走窗口折线）  
-- 对接真实 skill-admin
+- easy-floorplan 通过 Vite alias 引用本地源码，不整仓 fork 进 helpdesk  
+- 设计器配置存在浏览器 `localStorage`（`monday.easyFloorplan.config`）  
+- 工位/人员演示层后续会接到 skill-admin；当前为演示叠层

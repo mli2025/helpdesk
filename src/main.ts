@@ -1,5 +1,5 @@
 import './style.css'
-import { mountEasyFloorEditor, loadEasyFloorConfig, saveEasyFloorConfig } from './easyFloorHost'
+import { mountEasyFloorEditor, loadEasyFloorConfig, saveEasyFloorConfig, resetEasyFloorConfig } from './easyFloorHost'
 import { mountEfpDemoPreview } from './efpDemoPreview'
 
 type Mode = 'design' | 'preview'
@@ -22,8 +22,8 @@ function render(): void {
           <div class="brand">
             <div class="logo">一</div>
             <div>
-              <div class="title">星期一 · 户型设计</div>
-              <div class="sub">基于 <a href="https://github.com/nicosandller/easy-floorplan" target="_blank" rel="noreferrer">easy-floorplan</a>（MIT）· 画墙 / 放门窗 / 旋转门口</div>
+              <div class="title">星期一 · 办公平面设计</div>
+              <div class="sub">基于 <a href="https://github.com/nicosandller/easy-floorplan" target="_blank" rel="noreferrer">easy-floorplan</a> · <strong>单层</strong>办公平面 · 画墙/门窗（已隐藏楼层）</div>
             </div>
           </div>
           <div class="bar-actions">
@@ -43,8 +43,8 @@ function render(): void {
       render()
     })
     app.querySelector('[data-act="reset"]')?.addEventListener('click', () => {
-      if (!confirm('清除已保存户型并恢复示例？')) return
-      localStorage.removeItem('monday.easyFloorplan.config')
+      if (!confirm('清除已保存平面并恢复高对比示例？')) return
+      resetEasyFloorConfig()
       render()
     })
     return

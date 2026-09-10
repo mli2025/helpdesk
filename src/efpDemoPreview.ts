@@ -80,9 +80,17 @@ export function mountEfpDemoPreview(cfg: FloorplanCardConfig, host: HTMLElement)
     states: {},
     entities: {},
     locale: { language: 'zh-CN' },
+    themes: { darkMode: false },
     formatEntityState: (s: { state?: string }) => s?.state ?? '',
   }
-  card.setConfig({ ...cfg, height: H, width: W })
+  const previewCfg = {
+    ...cfg,
+    skin: cfg.skin || 'odnetnin',
+    background: cfg.background || '#fffdf7',
+    height: H,
+    width: W,
+  }
+  card.setConfig(previewCfg)
   slot.appendChild(card)
 
   const linksG = host.querySelector('[data-links]')!

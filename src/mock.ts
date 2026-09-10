@@ -1,19 +1,22 @@
-/** Demo mock for Monday board visual prototype */
+/** Demo mock for Monday floor-plan board */
 
 export type AgentMood = 'idle' | 'busy' | 'crazy'
 
 export type TicketStatus = 'todo' | 'processing' | 'done'
 
+export type DemandSource = '业务' | '财务' | '老板'
+
 export interface Ticket {
   id: string
   title: string
   status: TicketStatus
-  assignee?: string
+  source: DemandSource
+  assignee?: 'mail-1' | 'mail-2'
   ageSec: number
 }
 
 export interface Workstation {
-  id: string
+  id: 'mail-1' | 'mail-2'
   label: string
   mood: AgentMood
   load: number
@@ -29,32 +32,19 @@ export interface BoardState {
 }
 
 export function createInitialState(): BoardState {
+  return bumpDemo(emptyBase(), 'busy')
+}
+
+function emptyBase(): BoardState {
   return {
     mondayMood: 'idle',
-    inboundPerMin: 2,
+    inboundPerMin: 0,
     crazyThreshold: 8,
     workstations: [
-      {
-        id: 'mail-1',
-        label: '邮件助手 · 工位 1',
-        mood: 'busy',
-        load: 2,
-        currentTask: '整理客户附件清单',
-      },
-      {
-        id: 'mail-2',
-        label: '邮件助手 · 工位 2',
-        mood: 'idle',
-        load: 0,
-      },
+      { id: 'mail-1', label: '邮件助手 · 工位 1', mood: 'idle', load: 0 },
+      { id: 'mail-2', label: '邮件助手 · 工位 2', mood: 'idle', load: 0 },
     ],
-    tickets: [
-      { id: 'T-1042', title: '导出上周对账邮件包', status: 'processing', assignee: '工位 1', ageSec: 86 },
-      { id: 'T-1041', title: '补发合同 PDF 到共享盘', status: 'todo', ageSec: 210 },
-      { id: 'T-1040', title: '按标签归档供应商来信', status: 'todo', ageSec: 420 },
-      { id: 'T-1038', title: '生成拜访纪要草稿', status: 'done', assignee: '工位 2', ageSec: 12 },
-      { id: 'T-1037', title: '清理重复抄送线程', status: 'done', assignee: '工位 1', ageSec: 55 },
-    ],
+    tickets: [],
   }
 }
 
@@ -66,72 +56,138 @@ export function deriveMondayMood(state: BoardState): AgentMood {
   return 'idle'
 }
 
-export function bumpDemo(state: BoardState, mode: 'calm' | 'busy' | 'crazy'): BoardState {
+export function bumpDemo(_state: BoardState, mode: 'calm' | 'busy' | 'crazy'): BoardState {
   if (mode === 'calm') {
     return {
-      ...state,
+      ...emptyBase(),
       inboundPerMin: 0,
       mondayMood: 'idle',
-      workstations: state.workstations.map((w) => ({
-        ...w,
-        mood: 'idle' as const,
-        load: 0,
-        currentTask: undefined,
-      })),
-      tickets: state.tickets.map((t, i) =>
-        i < 2 ? { ...t, status: 'done' as const } : { ...t, status: 'done' as const },
-      ),
+      tickets: [
+        {
+          id: 'T-1038',
+          title: '生成拜访纪要草稿',
+          status: 'done',
+          source: '业务',
+          assignee: 'mail-2',
+          ageSec: 12,
+        },
+        {
+          id: 'T-1037',
+          title: '清理重复抄送线程',
+          status: 'done',
+          source: '财务',
+          assignee: 'mail-1',
+          ageSec: 55,
+        },
+      ],
     }
   }
+
   if (mode === 'busy') {
     return {
-      ...state,
-      inboundPerMin: 4,
+      ...emptyBase(),
+      inboundPerMin: 2,
       mondayMood: 'busy',
       workstations: [
         {
-          ...state.workstations[0],
+          id: 'mail-1',
+          label: '邮件助手 · 工位 1',
           mood: 'busy',
           load: 2,
           currentTask: '整理客户附件清单',
         },
         {
-          ...state.workstations[1],
+          id: 'mail-2',
+          label: '邮件助手 · 工位 2',
           mood: 'idle',
           load: 0,
-          currentTask: undefined,
         },
       ],
       tickets: [
-        { id: 'T-1042', title: '导出上周对账邮件包', status: 'processing', assignee: '工位 1', ageSec: 86 },
-        { id: 'T-1041', title: '补发合同 PDF 到共享盘', status: 'todo', ageSec: 210 },
-        { id: 'T-1040', title: '按标签归档供应商来信', status: 'todo', ageSec: 420 },
-        { id: 'T-1038', title: '生成拜访纪要草稿', status: 'done', assignee: '工位 2', ageSec: 12 },
-        { id: 'T-1037', title: '清理重复抄送线程', status: 'done', assignee: '工位 1', ageSec: 55 },
+        {
+          id: 'T-1042',
+          title: '导出上周对账邮件包',
+          status: 'processing',
+          source: '财务',
+          assignee: 'mail-1',
+          ageSec: 86,
+        },
+        {
+          id: 'T-1041',
+          title: '补发合同 PDF 到共享盘',
+          status: 'todo',
+          source: '老板',
+          ageSec: 210,
+        },
+        {
+          id: 'T-1040',
+          title: '按标签归档供应商来信',
+          status: 'todo',
+          source: '业务',
+          ageSec: 420,
+        },
+        {
+          id: 'T-1038',
+          title: '生成拜访纪要草稿',
+          status: 'done',
+          source: '业务',
+          assignee: 'mail-2',
+          ageSec: 12,
+        },
       ],
     }
   }
+
   return {
-    ...state,
+    ...emptyBase(),
     inboundPerMin: 18,
     mondayMood: 'crazy',
-    workstations: state.workstations.map((w, i) => ({
-      ...w,
-      mood: 'crazy' as const,
-      load: 6 + i,
-      currentTask: i === 0 ? '批量回填 12 封工单…' : '共享盘同步风暴…',
-    })),
+    workstations: [
+      {
+        id: 'mail-1',
+        label: '邮件助手 · 工位 1',
+        mood: 'crazy',
+        load: 6,
+        currentTask: '批量回填 12 封工单…',
+      },
+      {
+        id: 'mail-2',
+        label: '邮件助手 · 工位 2',
+        mood: 'crazy',
+        load: 7,
+        currentTask: '共享盘同步风暴…',
+      },
+    ],
     tickets: [
-      { id: 'T-1055', title: '紧急：老板要全部往来邮件', status: 'todo', ageSec: 40 },
-      { id: 'T-1054', title: '批量改密通知群发', status: 'todo', ageSec: 55 },
-      { id: 'T-1053', title: '附件超限拆包', status: 'todo', ageSec: 70 },
-      { id: 'T-1052', title: '跨盘镜像失败重试', status: 'processing', assignee: '工位 1', ageSec: 120 },
-      { id: 'T-1051', title: '客户侧会话结果回写', status: 'processing', assignee: '工位 2', ageSec: 95 },
-      { id: 'T-1049', title: '清理重复抄送线程', status: 'done', assignee: '工位 1', ageSec: 20 },
-      { id: 'T-1048', title: '生成拜访纪要草稿', status: 'done', assignee: '工位 2', ageSec: 33 },
-      { id: 'T-1047', title: '补发合同 PDF', status: 'done', assignee: '工位 1', ageSec: 48 },
-      { id: 'T-1046', title: '归档供应商来信', status: 'todo', ageSec: 200 },
-      { id: 'T-1045', title: '对账邮件包二次导出', status: 'todo', ageSec: 260 },
+      { id: 'T-1055', title: '紧急：老板要全部往来邮件', status: 'todo', source: '老板', ageSec: 40 },
+      { id: 'T-1054', title: '批量改密通知群发', status: 'todo', source: '业务', ageSec: 55 },
+      { id: 'T-1053', title: '附件超限拆包', status: 'todo', source: '财务', ageSec: 70 },
+      {
+        id: 'T-1052',
+        title: '跨盘镜像失败重试',
+        status: 'processing',
+        source: '业务',
+        assignee: 'mail-1',
+        ageSec: 120,
+      },
+      {
+        id: 'T-1051',
+        title: '客户侧会话结果回写',
+        status: 'processing',
+        source: '老板',
+        assignee: 'mail-2',
+        ageSec: 95,
+      },
+      {
+        id: 'T-1049',
+        title: '清理重复抄送线程',
+        status: 'done',
+        source: '财务',
+        assignee: 'mail-1',
+        ageSec: 20,
+      },
+      { id: 'T-1046', title: '归档供应商来信', status: 'todo', source: '业务', ageSec: 200 },
+      { id: 'T-1045', title: '对账邮件包二次导出', status: 'todo', source: '财务', ageSec: 260 },
     ],
   }
 }

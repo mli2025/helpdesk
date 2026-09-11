@@ -75,7 +75,7 @@ export function mountEfpDemoPreview(cfg: FloorplanCardConfig, host: HTMLElement)
         <g data-links></g>
         <g data-nodes></g>
       </svg>
-      <div class="plain-hint">人 / 文件 / 智能体叠在真实工位上 · 连线走门洞 · 点「再来一单」看动画</div>
+      <div class="plain-hint">接单台→Desk监视(Agent URL) · 助手→mail/project 线程 · 点「再来一单」看动画</div>
     </div>
   `
 

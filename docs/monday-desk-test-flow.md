@@ -128,7 +128,40 @@ Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
 
 ---
 
-## 建议你现在跟做的最小三步
+## 设计页 Agent URL → desk_agent 探测
+
+接单台配置的 **Agent URL** 应指向本机 Desk 监视器（不是 7900 / 不是 ASK 8081 / 不是 DEV 38080）：
+
+```text
+http://127.0.0.1:18765
+```
+
+探测步骤：
+
+1. 启动 Desk Agent（新加坡示例路径）：
+
+```powershell
+cd C:\cursor-bridge\skills\support_desk\desk_agent
+.\install_desk_agent.ps1 -Port 18765
+curl.exe -s http://127.0.0.1:18765/v1/health
+curl.exe -s http://127.0.0.1:18765/v1/threads
+curl.exe -s "http://127.0.0.1:18765/v1/jobs?service=mail"
+```
+
+2. 设计页打开接单台（Desk 监视）卡片，填入上述 Agent URL，点「探测状态」。
+3. 期望：`service=monday-desk-agent`；`/v1/threads` 返回 mail/project 两槽；User 级 `BRIDGE_*` 不被改写。
+
+共享盘任务包骨架（本机/SG）：
+
+```powershell
+cd C:\projects\helpdesk
+powershell -NoProfile -File .\scripts\init-cursor-job-dirs.ps1
+powershell -NoProfile -File .\scripts\drop-sample-task.ps1
+```
+
+默认根：`%LOCALAPPDATA%\monday-desk\shared-sandbox`（可用 `MONDAY_SHARED_ROOT` 覆盖）。
+
+---
 
 1. `install_desk_agent.ps1` + `curl health`  
 2. 设计页接单台 **只点探测**  

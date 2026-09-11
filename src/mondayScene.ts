@@ -25,10 +25,11 @@ export const DEPT_PEOPLE: Record<(typeof DEPTS)[number]['id'], string[]> = {
   prod: ['卫生产', '蒋质检', '沈排程'],
 }
 
+/** Cursor thread slots — serviceId reserved for mail/project binding (not 7900 brain). */
 export const AGENTS = [
-  { id: 'agent_mail', name: '邮件助手', color: '#4f46e5' },
-  { id: 'agent_support', name: '客服助手', color: '#0d9488' },
-  { id: 'agent_dev', name: '研发助手', color: '#db2777' },
+  { id: 'agent_mail', name: '邮件线程', serviceId: 'mail' as const, color: '#4f46e5' },
+  { id: 'agent_project', name: '项目线程', serviceId: 'project' as const, color: '#0d9488' },
+  { id: 'agent_reserve', name: '预留槽位', serviceId: '' as const, color: '#db2777' },
 ] as const
 
 export type SceneRole = 'human' | 'front' | 'agent'
@@ -96,7 +97,7 @@ export function buildMondayScene(): {
   const front: SceneStation = {
     id: 'recv',
     role: 'front',
-    name: '接单台·小周',
+    name: '接单台·Desk监视',
     x: ox + 70,
     y: aiTop + 130,
     w: 88,

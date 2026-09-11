@@ -255,7 +255,7 @@ export class BoardEditor {
       kind,
       style: 'desk-pc',
       name:
-        kind === 'front' ? '中继前台' : kind === 'agent' ? '智能体工位' : '人员工位',
+        kind === 'front' ? '接单台·Desk监视' : kind === 'agent' ? 'Cursor线程工位' : '人员工位',
       x: x - 60,
       y: y - 45,
       gender: kind === 'human' ? 'male' : undefined,
@@ -615,9 +615,11 @@ export class BoardEditor {
     }
     if (n.kind === 'agent') {
       const ag = this.agents.find((a) => a.id === n.agentId)
-      return ag ? ag.name : '未绑定智能体'
+      const sid = n.serviceId || ag?.serviceId
+      if (ag && sid) return `${ag.name} · ${sid}`
+      return ag ? ag.name : '未绑定 Cursor 线程'
     }
-    return '中继前台窗口'
+    return n.agentUrl ? `Desk监视 · ${n.agentUrl}` : 'Desk监视 · 配置 Agent URL'
   }
 
   private kindColor(kind: DeskKind): string {

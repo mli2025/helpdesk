@@ -58,7 +58,7 @@ function render(): void {
           <div class="logo">一</div>
           <div>
             <div class="title">星期一 · 看板演示</div>
-            <div class="sub">工位上的人 / 文件堆 / 智能体 · 单据沿门洞往复动画</div>
+            <div class="sub">接单台=Desk监视 · 助手=mail/project 线程 · 单据沿门洞往复动画</div>
           </div>
         </div>
         <div class="bar-actions">

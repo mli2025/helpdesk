@@ -11,6 +11,8 @@ export interface CatalogAgent {
   id: string
   name: string
   skill: string
+  /** Cursor thread service slot: mail | project (not a 7900 brain id) */
+  serviceId?: 'mail' | 'project' | ''
   avatar?: 'robot'
 }
 
@@ -24,9 +26,9 @@ const MOCK_PEOPLE: CatalogPerson[] = [
 ]
 
 const MOCK_AGENTS: CatalogAgent[] = [
-  { id: 'agent_mail_1', name: '邮件助手-1', skill: 'mail', avatar: 'robot' },
-  { id: 'agent_mail_2', name: '邮件助手-2', skill: 'mail', avatar: 'robot' },
-  { id: 'agent_mail_3', name: '邮件助手-3', skill: 'mail', avatar: 'robot' },
+  { id: 'agent_mail_1', name: '邮件线程', skill: 'mail', serviceId: 'mail', avatar: 'robot' },
+  { id: 'agent_project_1', name: '项目线程', skill: 'project', serviceId: 'project', avatar: 'robot' },
+  { id: 'agent_reserve_1', name: '预留槽位', skill: 'reserve', serviceId: '', avatar: 'robot' },
 ]
 
 export interface SkillAdminConfig {

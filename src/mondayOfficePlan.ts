@@ -43,7 +43,7 @@ function workstation(
 /**
  * 精致示例户型：
  * 上：财务 / 采购 / 销售 / 生产（各部门 3 工位）
- * 下：AI 办公室（最左接单台 + 3 个智能体工位）
+ * 下：AI 办公室（最左接单台·Desk监视 + mail/project 线程工位）
  */
 export function mondayOfficePlan(): FloorplanCardConfig {
   const { W, H, ox, oy, deptBottom, aiTop, aiBottom, right } = OFFICE
@@ -226,8 +226,8 @@ export function mondayOfficePlan(): FloorplanCardConfig {
     id: 'label_recv',
     x: ox + 24,
     y: aiTop + 58,
-    text: '接单台',
-    size: 16,
+    text: '接单台·Desk监视',
+    size: 14,
     color: '#b45309',
   })
 

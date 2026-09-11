@@ -43,6 +43,10 @@ export interface DeskNode {
   gender?: Gender
   /** bind agent from skill-admin */
   agentId?: string
+  /** Cursor thread service: mail | project (Desk monitors these slots) */
+  serviceId?: 'mail' | 'project' | ''
+  /** Desk monitor Agent URL when kind=front (e.g. http://127.0.0.1:18765) */
+  agentUrl?: string
   status: OfficeStatus
 }
 
@@ -110,9 +114,10 @@ export function sampleScheme(): BoardScheme {
     type: 'desk',
     kind: 'front',
     style: 'desk-pc',
-    name: '中继前台',
+    name: '接单台·Desk监视',
     x: 540,
     y: 320,
+    agentUrl: 'http://127.0.0.1:18765',
     status: 'idle',
   }
   const h1: DeskNode = {
@@ -144,10 +149,11 @@ export function sampleScheme(): BoardScheme {
     type: 'desk',
     kind: 'agent',
     style: 'desk-pc',
-    name: '邮件助手-1',
+    name: '邮件线程',
     x: 880,
     y: 180,
     agentId: 'agent_mail_1',
+    serviceId: 'mail',
     status: 'idle',
   }
   const a2: DeskNode = {
@@ -155,10 +161,11 @@ export function sampleScheme(): BoardScheme {
     type: 'desk',
     kind: 'agent',
     style: 'desk-pc',
-    name: '邮件助手-2',
+    name: '项目线程',
     x: 880,
     y: 420,
-    agentId: 'agent_mail_2',
+    agentId: 'agent_project_1',
+    serviceId: 'project',
     status: 'idle',
   }
   return {
